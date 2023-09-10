@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>Data_Bindings_Sphere_Movement</RootNamespace>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="DataStructuresLibrary">
+      <HintPath>..\..\..\A Level Computing\Data Structures\DataStructures\DataStructuresLibrary\bin\Release\netcoreapp3.1\DataStructuresLibrary.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

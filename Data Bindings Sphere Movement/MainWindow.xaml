@@ -1,0 +1,48 @@
+﻿<Window x:Class="DataBindingsSphereMovement.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DataBindingsSphereMovement"
+        mc:Ignorable="d"
+        Title="MainWindow" Name ="Window" Height="863.2" WindowState= "Maximized"  WindowStyle="None" Width="1535.2">
+
+    <Window.Resources>
+        <local:PosConv x:Key="positionConv"/>
+    </Window.Resources>
+
+    <Canvas Name ="canvas" Background="#FF186383" Focusable ="True" Width="Auto" MouseDown="MouseHeld" MouseUp="MouseRelease" MouseMove="PanelDrag" PreviewMouseDown="BeginPanelDrag" PreviewMouseUp="EndPanelDrag">
+
+        <Button Content="Button" Canvas.Left="98" Canvas.Top="316" Click="Button_Click" Panel.ZIndex="1"/>
+        <TextBox TextWrapping="Wrap" Text="{Binding ParticleCount, Mode=OneWay}" Canvas.Top="472" Width="120" Canvas.Left="61" Panel.ZIndex="1"/>
+
+        <Border x:Name="BoxBorder" BorderBrush="Black" BorderThickness="3" Height="803.2" Canvas.Left="30" Canvas.Top="30" Width="1475.2" OpacityMask="Black" Background="#FFB4D0E8" Panel.ZIndex="0"/>
+
+        <Border Name="ParticlePanel" BorderThickness="10,20,10,10" BorderBrush="#80000000" Background="#40000000" Canvas.Left="362" Canvas.Top="183" Panel.ZIndex="2" CornerRadius="5" Height="258" Width="286">
+            <StackPanel Margin="0,0,0,0">
+                <Button Content="Button"/>
+            </StackPanel>
+        </Border>
+
+        <Slider Name ="tempSlider" Canvas.Left="61" Canvas.Top="217" Width="150" Value="{Binding TempCoeff}" ValueChanged="TempValueChanged"/>
+        <TextBox Name="mouseCoords" Canvas.Left="61" TextWrapping="Wrap" Text="0,0" Canvas.Top="423" Width="120"/>
+        <TextBox Name ="tempDisplay"  TextWrapping="Wrap" Canvas.Top="261" Width="135" Canvas.Left="76" Height="18"/>
+        <TextBox Name ="gameTimeDisplay" Canvas.Left="1272" TextWrapping="Wrap" Text="0" Canvas.Top="12" Width="120"/>
+
+        <Menu Name ="toolbar" Height="20" Width="200" Canvas.Left="30" Canvas.Top="5">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Save" IsCheckable="False"/>
+                <MenuItem Header="_Close" IsCheckable="False" Click="Close"/>
+            </MenuItem>
+            <MenuItem Header="_Options">
+                <MenuItem Header="_Show Quadtree" IsCheckable="True" Click="ToggleQuadtree"/>
+            </MenuItem>
+            <MenuItem Header="_Panels">
+                <MenuItem Header="_Particles" IsCheckable="True" Click="ToggleParticlesPanel"/>
+            </MenuItem>
+        </Menu>
+
+    </Canvas>
+
+</Window>
+    
