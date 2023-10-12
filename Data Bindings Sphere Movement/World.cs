@@ -23,8 +23,6 @@ namespace DataBindingsSphereMovement
 
         private ObservableCollection<Particle> particles;
 
-        
-
         private double tempCoeff = 0;
         private const double tempMultiplier = 0.333;
 

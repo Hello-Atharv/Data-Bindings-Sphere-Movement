@@ -11,23 +11,39 @@
         <local:PosConv x:Key="positionConv"/>
     </Window.Resources>
 
-    <Canvas Name ="canvas" Background="#FF186383" Focusable ="True" Width="Auto" MouseDown="MouseHeld" MouseUp="MouseRelease" MouseMove="PanelDrag" PreviewMouseDown="BeginPanelDrag" PreviewMouseUp="EndPanelDrag">
+    <Canvas Name ="canvas" Background="#343436" Focusable ="True" Width="Auto" MouseDown="MouseHeld" MouseUp="MouseRelease" MouseMove="PanelDrag" PreviewMouseDown="BeginPanelDrag" PreviewMouseUp="EndPanelDrag">
 
         <Button Content="Button" Canvas.Left="98" Canvas.Top="316" Click="Button_Click" Panel.ZIndex="1"/>
-        <TextBox TextWrapping="Wrap" Text="{Binding ParticleCount, Mode=OneWay}" Canvas.Top="472" Width="120" Canvas.Left="61" Panel.ZIndex="1"/>
+        <TextBox TextWrapping="Wrap" Text="{Binding ParticleCount, Mode=OneWay}" Canvas.Top="472" Width="120" Canvas.Left="61" Panel.ZIndex="1" IsReadOnly="True"/>
 
-        <Border x:Name="BoxBorder" BorderBrush="Black" BorderThickness="3" Height="803.2" Canvas.Left="30" Canvas.Top="30" Width="1475.2" OpacityMask="Black" Background="#FFB4D0E8" Panel.ZIndex="0"/>
+        <Border x:Name="BoxBorder" BorderBrush="Black" BorderThickness="3" Height="803.2" Canvas.Left="30" Canvas.Top="30" Width="1475.2" OpacityMask="Black" Background="#E0E8E9" Panel.ZIndex="0"/>
 
-        <Border Name="ParticlePanel" BorderThickness="10,20,10,10" BorderBrush="#80000000" Background="#40000000" Canvas.Left="362" Canvas.Top="183" Panel.ZIndex="2" CornerRadius="5" Height="258" Width="286">
-            <StackPanel Margin="0,0,0,0">
-                <Button Content="Button"/>
-            </StackPanel>
-        </Border>
+        <Grid Name="ParticlePanel" Canvas.Left="1180" Canvas.Top="60" Panel.ZIndex="2">
+            <Border BorderThickness="10,20,10,10" BorderBrush="#343030" Background="#A9A3A3" Canvas.Left="1180" Canvas.Top="60" Panel.ZIndex="2" CornerRadius="5" Height="304" Width="300" Visibility="Visible">
+                <Label Content="Particles" Margin="104,-23,104,226" Foreground="White" FontWeight="Bold" FontSize="12" />
+            </Border>
+            <Label Content="Add Groups:" Margin="0,0,38,225" Foreground="Black" FontWeight="Bold" FontSize="12" Panel.ZIndex="3" Width="80" Height="30"/>
+            <Button FontWeight="Bold" FontSize="16" Width ="20" Height="20" Panel.ZIndex="3" Margin="70,0,0,225" Background="#857E7E" BorderBrush="Black" BorderThickness="1.5" Click="AddParticleGroup">
+                <Image Source="C:\Users\rawat\Desktop\Computing NEA Code\+ sign for button.png"/>
+            </Button>
 
-        <Slider Name ="tempSlider" Canvas.Left="61" Canvas.Top="217" Width="150" Value="{Binding TempCoeff}" ValueChanged="TempValueChanged"/>
+            <Grid Name="Group1" Panel.ZIndex="3">
+                <Border BorderBrush="Black" BorderThickness="1" Width="264" Height="105" Background="#857E7E" Margin="0,0,0,85">
+                    <Label Content="Group 1" Margin="1,-1,201,79" Foreground="Black" FontWeight="Bold" Width="60" Height="25" FontSize="10"/>
+                </Border>
+                <Button Content="Spawn" FontSize="10" Width="40" Height="20" Background="#857E7E" BorderBrush="Black" BorderThickness="1.5" Margin="170,0,0,160"/>
+                <Button Content="—" FontSize="11" Background="#857E7E" Height="20" Width="15" Margin="261,65,25,225" BorderBrush="Transparent"/>
+                <Label Content="Count" FontSize="10" Margin="21,83,242,205" Width="38" Height="22"/>
+                <Line Width="50" Height="20" Margin="50" />
+            </Grid>
+        </Grid>
+        
+        
+
+        <Slider Name ="tempSlider" Canvas.Left="61" Canvas.Top="217" Width="150" Value="{Binding TempCoeff}" ValueChanged="TempValueChanged" Panel.ZIndex="2"/>
         <TextBox Name="mouseCoords" Canvas.Left="61" TextWrapping="Wrap" Text="0,0" Canvas.Top="423" Width="120"/>
         <TextBox Name ="tempDisplay"  TextWrapping="Wrap" Canvas.Top="261" Width="135" Canvas.Left="76" Height="18"/>
-        <TextBox Name ="gameTimeDisplay" Canvas.Left="1272" TextWrapping="Wrap" Text="0" Canvas.Top="12" Width="120"/>
+        <TextBox Name ="gameTimeDisplay" Canvas.Left="1272" TextWrapping="Wrap" Text="0" Canvas.Top="12" Width="120" IsReadOnly="True"/>
 
         <Menu Name ="toolbar" Height="20" Width="200" Canvas.Left="30" Canvas.Top="5">
             <MenuItem Header="_File">
@@ -38,9 +54,10 @@
                 <MenuItem Header="_Show Quadtree" IsCheckable="True" Click="ToggleQuadtree"/>
             </MenuItem>
             <MenuItem Header="_Panels">
-                <MenuItem Header="_Particles" IsCheckable="True" Click="ToggleParticlesPanel"/>
+                <MenuItem Name="ParticlePanelTrigger"  Header="_Particles" IsCheckable="True" Click="TogglePanel"/>
             </MenuItem>
         </Menu>
+
 
     </Canvas>
 

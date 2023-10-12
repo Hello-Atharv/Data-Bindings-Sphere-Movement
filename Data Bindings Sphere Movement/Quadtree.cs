@@ -53,7 +53,6 @@ namespace DataBindingsSphereMovement
                     nodes.Add(nodesplit[i]);
                 }
             }
-            
         }
 
         private Tuple<Particle,bool> CheckParticlesInRectangle(Node node, ref List<Particle> particles)

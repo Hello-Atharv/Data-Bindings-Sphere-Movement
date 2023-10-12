@@ -22,11 +22,12 @@ namespace DataBindingsSphereMovement
         private const double sphereSpawnDelay = 3;
         private const double sphereSpawnMultiplier = 0.02;
 
-        private bool panelDragState = false;
+        private object movingObject;
+        private double firstXPos, firstYPos;
 
-        private double startXPos;
-        private double startYPos;
-        private object gettingDragged;
+        private int panelCount = 1;
+        private Vector[] panelPositions;
+
 
         public MainWindow()
         {
@@ -37,9 +38,10 @@ namespace DataBindingsSphereMovement
 
             Builder.TickNotify += TickTimedFunctions;
 
-            SetUpBorder();
-            
+            panelPositions = new Vector[panelCount];
 
+            SetUpBorder();
+            InitialisePanels();
         }
 
         private void UpdateGameTime()
@@ -61,41 +63,39 @@ namespace DataBindingsSphereMovement
             {
                 DeleteQuadtree();
             }
-            if (Builder.Ticks % Math.Round(sphereSpawnDelay-(Math.Log10(1+Builder.SimWorld.ParticleCount*sphereSpawnMultiplier))) == 0)
+
+            if (Builder.Ticks % Math.Round(sphereSpawnDelay - (Math.Log10(1 + Builder.SimWorld.ParticleCount * sphereSpawnMultiplier))) == 0)
             {
                 SphereCreation();
             }
         }
 
-        private void BeginPanelDrag(object sender, RoutedEventArgs e)
+        private void BeginPanelDrag(object sender, MouseButtonEventArgs e)
         {
-            IInputElement panel = Mouse.DirectlyOver;
+            firstXPos = e.GetPosition(ParticlePanel).X;
+            firstYPos = e.GetPosition(ParticlePanel).Y;
 
-            startXPos = Mouse.GetPosition(ParticlePanel).X;
-            startYPos = Mouse.GetPosition(ParticlePanel).Y;
-
-            gettingDragged = sender;
+            movingObject = sender;
         }
 
-        private void PanelDrag(object sender, RoutedEventArgs e)
+        private void EndPanelDrag(object sender, MouseButtonEventArgs e)
         {
-            if (Mouse.LeftButton == MouseButtonState.Pressed && sender == gettingDragged)
+            movingObject = null;
+        }
+
+        private void PanelDrag(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed && sender == movingObject && ParticlePanel == Mouse.DirectlyOver)
             {
-                double newLeft = Mouse.GetPosition(canvas).X - startXPos - canvas.Margin.Left;
+                double newLeft = e.GetPosition(canvas).X - firstXPos - canvas.Margin.Left;
 
                 ParticlePanel.SetValue(Canvas.LeftProperty, newLeft);
 
-                double newTop = Mouse.GetPosition(canvas).Y - startYPos - canvas.Margin.Top;
+                double newTop = e.GetPosition(canvas).Y - firstYPos - canvas.Margin.Top;
 
                 ParticlePanel.SetValue(Canvas.TopProperty, newTop);
             }
         }
-
-        private void EndPanelDrag(object sender, RoutedEventArgs e)
-        {
-            gettingDragged = null;
-        }
-
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
@@ -157,7 +157,7 @@ namespace DataBindingsSphereMovement
                 Width = sphereSize,
                 Height = sphereSize,
                 Stroke = Brushes.Black,
-                Fill = Brushes.Blue
+                Fill = Brushes.Red
             };
 
             Canvas.SetLeft(ellipse, mouseXPos);
@@ -251,9 +251,31 @@ namespace DataBindingsSphereMovement
             showQuadtree = !showQuadtree;
         }
 
-        private void ToggleParticlesPanel(object sender, RoutedEventArgs e)
+        private void TogglePanel(object sender, RoutedEventArgs e)
         {
-            
+            UIElement panel = null;
+
+            if(sender == ParticlePanelTrigger)
+            {
+                panel = ParticlePanel;
+            }
+
+            if (panel.Visibility == Visibility.Visible)
+            {
+                ParticlePanel.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                ParticlePanel.SetValue(Canvas.LeftProperty, 1180.0);
+                ParticlePanel.SetValue(Canvas.TopProperty, 60.0);
+                ParticlePanel.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void InitialisePanels()
+        {
+            panelPositions[0] = new Vector(Canvas.GetTop(ParticlePanel), Canvas.GetLeft(ParticlePanel));
+            ParticlePanel.Visibility = Visibility.Collapsed;
         }
 
         private void DeleteQuadtree()
@@ -265,6 +287,11 @@ namespace DataBindingsSphereMovement
                     canvas.Children.RemoveAt(i);
                 }
             }
+        }
+
+        private void AddParticleGroup(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
