@@ -7,7 +7,6 @@ namespace DataBindingsSphereMovement
     class Quadtree
     {
         private Node root;
-        private VectorGroup vectors;
 
         private Vector iHat = new Vector(1, 0);
         private Vector jHat = new Vector(0, 1);
@@ -17,11 +16,10 @@ namespace DataBindingsSphereMovement
         private const int southEast = 2;
         private const int northEast = 3;
 
-        List<Node> nodes;
+        private List<Node> nodes;
 
         public Quadtree(Vector rootTopLeft, Vector rootBottomRight)
         {
-            vectors = new VectorGroup();
             root = new Node(rootTopLeft, rootBottomRight);
             
         }
@@ -86,15 +84,15 @@ namespace DataBindingsSphereMovement
         private Node[] splitQuadrant(Node parentNode)
         {
             Node[] nodes = new Node[4];
-            Vector diagonal = vectors.SubtractVectors(false, parentNode.BottomRight, parentNode.TopLeft);
+            Vector diagonal = parentNode.BottomRight.SubtractVectors(false, parentNode.TopLeft);
 
-            Vector deltaIHat = new Vector(Math.Abs(vectors.DotProduct(diagonal,iHat))/2, 0);
-            Vector deltaJHat = new Vector(0, Math.Abs(vectors.DotProduct(diagonal, jHat)) / 2);
+            Vector deltaIHat = new Vector(Math.Abs(diagonal.DotProduct(iHat))/2, 0);
+            Vector deltaJHat = new Vector(0, Math.Abs(diagonal.DotProduct(jHat)) / 2);
 
-            nodes[northWest] = new Node(parentNode.TopLeft, vectors.SubtractVectors(false, parentNode.BottomRight,vectors.AddVectors(false, deltaIHat, deltaJHat)));
-            nodes[southWest] = new Node(vectors.AddVectors(false, parentNode.TopLeft, deltaJHat), vectors.SubtractVectors(false, parentNode.BottomRight, deltaIHat));
-            nodes[southEast] = new Node(vectors.AddVectors(false, parentNode.TopLeft, vectors.AddVectors(false, deltaIHat, deltaJHat)), parentNode.BottomRight);
-            nodes[northEast] = new Node(vectors.AddVectors(false,parentNode.TopLeft,deltaIHat),vectors.SubtractVectors(false,parentNode.BottomRight,deltaJHat));
+            nodes[northWest] = new Node(parentNode.TopLeft, parentNode.BottomRight.SubtractVectors(false, deltaIHat.AddVectors(false, deltaJHat)));
+            nodes[southWest] = new Node(parentNode.TopLeft.AddVectors(false, deltaJHat), parentNode.BottomRight.SubtractVectors(false, deltaIHat));
+            nodes[southEast] = new Node(parentNode.TopLeft.AddVectors(false, deltaIHat.AddVectors(false, deltaJHat)), parentNode.BottomRight);
+            nodes[northEast] = new Node(parentNode.TopLeft.AddVectors(false,deltaIHat), parentNode.BottomRight.SubtractVectors(false,deltaJHat));
 
             return nodes;
         }

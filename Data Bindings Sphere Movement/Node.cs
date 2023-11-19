@@ -7,13 +7,13 @@ namespace DataBindingsSphereMovement
     class Node
     {
 
-        Vector topLeft;
-        Vector bottomRight;
+        private Vector topLeft;
+        private Vector bottomRight;
 
-        Node parent;
-        Node[] children = new Node[4];
+        private Node parent;
+        private Node[] children = new Node[4];
 
-        Particle containedParticle;
+        private Particle containedParticle;
 
         public Node(Vector topLeft, Vector bottomRight){
             this.topLeft = topLeft;

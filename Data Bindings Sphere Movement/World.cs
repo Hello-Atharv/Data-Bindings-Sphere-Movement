@@ -16,12 +16,12 @@ namespace DataBindingsSphereMovement
         private const double perimeterHeight = 803.2;
         private const double offset = 30;
 
-        VectorGroup vectors = new VectorGroup();
         Quadtree quadtree = new Quadtree(new Vector(offset, offset), new Vector(offset + perimeterWidth, offset + perimeterHeight));
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         private ObservableCollection<Particle> particles;
+        private List<Attributes> attributes;
 
         private double tempCoeff = 0;
         private const double tempMultiplier = 0.333;
@@ -29,6 +29,7 @@ namespace DataBindingsSphereMovement
         public World()
         {
             particles = new ObservableCollection<Particle>();
+            attributes = new List<Attributes>();
 
             Vector topLeft = new Vector(offset, offset);
             Vector bottomRight = new Vector(offset + perimeterWidth, offset + perimeterHeight);
@@ -70,7 +71,7 @@ namespace DataBindingsSphereMovement
                 yVel = -1 * yVel;
             }
 
-            Particle newParticle = new Particle(xPos, yPos, xVel, yVel);
+            Particle newParticle = new Particle(xPos, yPos, xVel, yVel, attributes[0]);
             particles.Add(newParticle);
             OnPropertyChanged("ParticleCount");
         }
@@ -89,7 +90,7 @@ namespace DataBindingsSphereMovement
             {
                 perimeterSafetyFactor = -15;
 
-                vectors.AddVectors(true, p.Position, vectors.ScalarMultiply(false, p.Velocity, deltaT*(1+tempCoeff*tempMultiplier)));
+                p.Position.AddVectors(true,p.Velocity.ScalarMultiply(false,deltaT*(1+tempCoeff*tempMultiplier)));
 
                 /*
                 if(p.Position.XValue < (offset - perimeterSafetyFactor-p.Radius))
@@ -121,11 +122,11 @@ namespace DataBindingsSphereMovement
         {
             foreach (Particle p in particles)
             {
-                if((p.Position.XValue < offset)||(p.Position.XValue > offset + perimeterWidth-2*p.Radius))
+                if((p.Position.XValue < offset)||(p.Position.XValue > offset + perimeterWidth-2*p.Properties.Radius))
                 {
                     p.Velocity.XValue = -1 * p.Velocity.XValue;
                 }
-                if ((p.Position.YValue < offset) || (p.Position.YValue > offset + perimeterHeight - 2 * p.Radius))
+                if ((p.Position.YValue < offset) || (p.Position.YValue > offset + perimeterHeight - 2 * p.Properties.Radius))
                 {
                     p.Velocity.YValue = -1 * p.Velocity.YValue;
                 }
@@ -140,7 +141,7 @@ namespace DataBindingsSphereMovement
                 for(int y = 0; y< particles.Count-1; y++)
                 {
 
-                    if( (vectors.SepDistance(particles[x].Position, particles[y].Position) <= particles[x].Radius + particles[y].Radius) && x != y)
+                    if( (particles[x].Position.SepDistance(particles[y].Position) <= particles[x].Properties.Radius + particles[y].Properties.Radius) && x != y)
                     {
                         SimulateParticleCollision23(x, y);
                        
@@ -150,29 +151,30 @@ namespace DataBindingsSphereMovement
         }
 
         public void SimulateParticleCollision(int particle1, int particle2)
-        { 
+        {
+            Particle par1 = particles[particle1];
+            Particle par2 = particles[particle2];
 
-            Vector newVelocity1 = vectors.SubtractVectors(false, particles[particle1].Velocity, vectors.ScalarMultiply(false, vectors.SubtractVectors(false, particles[particle1].Position, particles[particle2].Position), ((2 * particles[particle2].Mass) / (particles[particle1].Mass + particles[particle2].Mass)) * (vectors.DotProduct(vectors.SubtractVectors(false, particles[particle1].Velocity, particles[particle2].Velocity), vectors.SubtractVectors(false, particles[particle1].Position, particles[particle2].Position)) / (Math.Pow(vectors.Magnitude(vectors.SubtractVectors(false, particles[particle1].Position, particles[particle2].Position)), 2)))));
+            double commonFactor = (2*par1.Velocity.SubtractVectors(false, par2.Velocity).DotProduct(par1.Position.SubtractVectors(false, par2.Position)))/((par1.Properties.Mass+par2.Properties.Mass)*par1.Position.SubtractVectors(false,par2.Position).Magnitude());
 
-            Vector newVelocity2 = vectors.SubtractVectors(false, particles[particle2].Velocity, vectors.ScalarMultiply(false, vectors.SubtractVectors(false, particles[particle2].Position, particles[particle1].Position), ((2 * particles[particle1].Mass) / (particles[particle1].Mass + particles[particle2].Mass)) * (vectors.DotProduct(vectors.SubtractVectors(false, particles[particle2].Velocity, particles[particle1].Velocity), vectors.SubtractVectors(false, particles[particle2].Position, particles[particle1].Position)) / (Math.Pow(vectors.Magnitude(vectors.SubtractVectors(false, particles[particle1].Position, particles[particle2].Position)), 2)))));
-
-            particles[particle1].Velocity = newVelocity1;
-            particles[particle2].Velocity = newVelocity2;
+            par1.Velocity = par1.Velocity.SubtractVectors(true, par1.Position.SubtractVectors(false, par2.Position).ScalarMultiply(false,commonFactor));
+            par2.Velocity = par2.Velocity.AddVectors(true, par1.Position.SubtractVectors(false, par2.Position).ScalarMultiply(false, commonFactor));
         }
+
 
             
         private void SimulateParticleCollision23(int particle1, int particle2)
         {
-            Vector sepVector = vectors.SubtractVectors(false, particles[particle1].Position, particles[particle2].Position);
-            Vector orthoSepVector = vectors.Orthogonal(sepVector);
+            Vector sepVector = particles[particle1].Position.SubtractVectors(false, particles[particle2].Position);
+            Vector orthoSepVector = sepVector.Orthogonal();
 
-            Vector velocity1BasisChanged = vectors.ChangeBasis(particles[particle1].Velocity, sepVector, orthoSepVector);
-            Vector velocity2BasisChanged = vectors.ChangeBasis(particles[particle2].Velocity, sepVector, orthoSepVector);
+            Vector velocity1BasisChanged = particles[particle1].Velocity.ChangeBasis(sepVector, orthoSepVector);
+            Vector velocity2BasisChanged = particles[particle2].Velocity.ChangeBasis(sepVector, orthoSepVector);
 
             Vector finalVelocity1BasisChanged = new Vector(velocity1BasisChanged.XValue, velocity1BasisChanged.YValue);
             Vector finalVelocity2BasisChanged = new Vector(velocity2BasisChanged.XValue, velocity2BasisChanged.YValue);
 
-            double alpha = (particles[particle1].Mass) / (particles[particle2].Mass);
+            double alpha = (particles[particle1].Properties.Mass) / (particles[particle2].Properties.Mass);
 
             double a = alpha + 1;
             double b = -2 * (alpha * velocity1BasisChanged.XValue + velocity2BasisChanged.XValue);
@@ -199,8 +201,8 @@ namespace DataBindingsSphereMovement
             }
             */
 
-            particles[particle1].Velocity = vectors.InvertFromBasis(finalVelocity1BasisChanged, sepVector, orthoSepVector);
-            particles[particle2].Velocity = vectors.InvertFromBasis(finalVelocity2BasisChanged, sepVector, orthoSepVector);
+            particles[particle1].Velocity = finalVelocity1BasisChanged.InvertFromBasis(sepVector, orthoSepVector);
+            particles[particle2].Velocity = finalVelocity2BasisChanged.InvertFromBasis(sepVector, orthoSepVector);
 
         }
             
@@ -213,6 +215,12 @@ namespace DataBindingsSphereMovement
             result[1] = (-bCoeff - Math.Sqrt(Math.Pow(bCoeff, 2) - 4 * aCoeff * cCoeff)) / (2 * aCoeff);
 
             return result;
+        }
+
+        public void MakeNewParticleGroup()
+        {
+            Attributes group = new Attributes(10, 1);
+            attributes.Add(group);
         }
 
 
@@ -231,6 +239,13 @@ namespace DataBindingsSphereMovement
             get { return tempCoeff; }
             set { tempCoeff = value; OnPropertyChanged("TempCoeff"); }
         }
+
+        public List<Attributes> Attributes
+        {
+            get { return attributes; }
+        }
+
+
 
         public ref Quadtree GetQuadtree
         {

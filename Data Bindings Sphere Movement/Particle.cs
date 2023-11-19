@@ -5,24 +5,25 @@ using System.ComponentModel;
 
 namespace DataBindingsSphereMovement
 {
-    class Particle
+    class Particle : INotifyPropertyChanged
     {
+
+        public event PropertyChangedEventHandler PropertyChanged;
+    
 
         private Vector position;
         private Vector velocity;
-
-        private double radius = 8;
-
-        private double mass = 1;
+        private Attributes properties;
 
         private Random rand = new Random();
 
-        public Particle(double xCoord, double yCoord, double xVel, double yVel)
+        public Particle(double xCoord, double yCoord, double xVel, double yVel, Attributes group)
         {
 
             position = new Vector(xCoord, yCoord);
             velocity = new Vector(xVel, yVel);
 
+            properties = group;
         }
 
         public Vector Position
@@ -37,16 +38,18 @@ namespace DataBindingsSphereMovement
             set { velocity = value; }
         }
 
-        public double Radius
+        public Attributes Properties
         {
-            get { return radius; }
-            set { radius = value; }
+            get { return properties; }
         }
 
-        public double Mass
+
+        protected void OnPropertyChanged(string propertyName)
         {
-            get { return mass; }
-            set { mass = value; }
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
         }
 
 

@@ -20,12 +20,11 @@ namespace DataBindingsSphereMovement
             timer.Tick += GameTimerEvent;
             timer.Interval = TimeSpan.FromMilliseconds(deltaT * 1000);
             timer.Start();
-
+            ParticleGroupAdd();
         }
 
         private void GameTimerEvent(object sender, EventArgs e)
-        {
-
+        { 
             UpdateSim();
             OnTickNotify(EventArgs.Empty);
             ticks++;
@@ -43,6 +42,11 @@ namespace DataBindingsSphereMovement
         public void ParticleAdd(double xPos, double yPos)
         {
             SimWorld.AddParticle(xPos, yPos);
+        }
+
+        public void ParticleGroupAdd()
+        {
+            SimWorld.MakeNewParticleGroup();
         }
 
         public int Ticks

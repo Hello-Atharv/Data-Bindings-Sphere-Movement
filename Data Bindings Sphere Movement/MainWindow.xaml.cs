@@ -25,6 +25,8 @@ namespace DataBindingsSphereMovement
         private object movingObject;
         private double firstXPos, firstYPos;
 
+        private UIElement element;
+
         private int panelCount = 1;
         private Vector[] panelPositions;
 
@@ -68,9 +70,24 @@ namespace DataBindingsSphereMovement
             {
                 SphereCreation();
             }
+
+            try
+            {
+                itemDirectlyOver.Text = Convert.ToString(Panel.GetZIndex((UIElement)Mouse.DirectlyOver));
+                
+                if(Mouse.DirectlyOver == slider)
+                {
+                    itemDirectlyOver.Text = itemDirectlyOver.Text + " ooga booba";
+                }
+            }
+            catch(Exception ex)
+            {
+                 
+            }
+            
         }
 
-        private void BeginPanelDrag(object sender, MouseButtonEventArgs e)
+        private void PreviewDown(object sender, MouseButtonEventArgs e)
         {
             firstXPos = e.GetPosition(ParticlePanel).X;
             firstYPos = e.GetPosition(ParticlePanel).Y;
@@ -78,48 +95,27 @@ namespace DataBindingsSphereMovement
             movingObject = sender;
         }
 
-        private void EndPanelDrag(object sender, MouseButtonEventArgs e)
+        private void PreviewUp(object sender, MouseButtonEventArgs e)
         {
             movingObject = null;
         }
 
-        private void PanelDrag(object sender, MouseEventArgs e)
+        private void MoveMouse(object sender, MouseEventArgs e)
         {
-            if (e.LeftButton == MouseButtonState.Pressed && sender == movingObject && ParticlePanel == Mouse.DirectlyOver)
-            {
-                double newLeft = e.GetPosition(canvas).X - firstXPos - canvas.Margin.Left;
+                
+                if (e.LeftButton == MouseButtonState.Pressed && sender == movingObject)
+                {
+                    mouseDown = false;
+                    double newLeft = e.GetPosition(canvas).X - firstXPos - canvas.Margin.Left;
 
-                ParticlePanel.SetValue(Canvas.LeftProperty, newLeft);
+                    ParticlePanel.SetValue(Canvas.LeftProperty, newLeft);
 
-                double newTop = e.GetPosition(canvas).Y - firstYPos - canvas.Margin.Top;
+                    double newTop = e.GetPosition(canvas).Y - firstYPos - canvas.Margin.Top;
 
-                ParticlePanel.SetValue(Canvas.TopProperty, newTop);
-            }
-        }
+                    ParticlePanel.SetValue(Canvas.TopProperty, newTop);
 
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-
-            Ellipse ellipse = new Ellipse()
-            {
-                Width = 50,
-                Height = 50,
-                Stroke = Brushes.Black
-            };
-
-            int x = 60;
-            int y = 70;
-
-            Canvas.SetLeft(ellipse, x);
-            Canvas.SetTop(ellipse, y);
-
-            canvas.Children.Add(ellipse);
-
-            Builder.ParticleAdd(x, y);
-
-            Window win = new Window();
-            win.Show();
-
+                }
+            
         }
 
         private void SphereCreation()
@@ -133,7 +129,7 @@ namespace DataBindingsSphereMovement
                 xPos = Mouse.GetPosition(canvas).X - mouseOffset;
                 yPos = Mouse.GetPosition(canvas).Y - mouseOffset;
 
-                if (CheckWithinBorder(xPos, yPos) && Mouse.DirectlyOver != ParticlePanel)
+                if (CheckWithinBorder(xPos, yPos) && Panel.GetZIndex((UIElement)Mouse.DirectlyOver)<1 && Panel.GetZIndex((UIElement)Mouse.DirectlyOver)<50)
                 {
                     AddSphere(xPos, yPos);
                 }
@@ -145,12 +141,18 @@ namespace DataBindingsSphereMovement
         {
 
             PosConv posConv = new PosConv();
+            RadiusConv radiusConv = new RadiusConv();
 
             Binding xPos = new Binding("XValue");
             Binding yPos = new Binding("YValue");
 
+            Binding diameter = new Binding("Radius");
+            Binding mass = new Binding("Mass");
+
             xPos.Converter = posConv;
             yPos.Converter = posConv;
+
+            diameter.Converter = radiusConv;
 
             Ellipse ellipse = new Ellipse()
             {
@@ -171,6 +173,12 @@ namespace DataBindingsSphereMovement
 
             xPos.Source = Builder.SimWorld.AllParticles[Builder.SimWorld.ParticleCount - 1].Position;
             yPos.Source = Builder.SimWorld.AllParticles[Builder.SimWorld.ParticleCount - 1].Position;
+
+            diameter.Source = Builder.SimWorld.Attributes[0];
+            mass.Source = Builder.SimWorld.Attributes[0];
+
+            ellipse.SetBinding(Canvas.HeightProperty, diameter);
+            ellipse.SetBinding(Canvas.WidthProperty, diameter);
 
             ellipse.SetBinding(Canvas.LeftProperty, xPos);
             ellipse.SetBinding(Canvas.TopProperty, yPos);
@@ -290,6 +298,34 @@ namespace DataBindingsSphereMovement
         }
 
         private void AddParticleGroup(object sender, RoutedEventArgs e)
+        {
+            Builder.ParticleGroupAdd();
+        }
+
+        private void ToggleElement(UIElement element)
+        {
+            if (element.Visibility == Visibility.Visible)
+            {
+                ParticlePanel.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                ParticlePanel.SetValue(Canvas.LeftProperty, 1180.0);
+                ParticlePanel.SetValue(Canvas.TopProperty, 60.0);
+                ParticlePanel.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void ToggleSimulationTime(object sender, RoutedEventArgs e)
+        {
+
+        }
+        private void ToggleParticleCount(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void OpenHelp(object sender, RoutedEventArgs e)
         {
 
         }

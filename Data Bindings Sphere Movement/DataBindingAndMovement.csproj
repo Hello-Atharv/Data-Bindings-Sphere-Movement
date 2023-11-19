@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="SQLite" Version="3.13.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="DataStructuresLibrary">
       <HintPath>..\..\..\A Level Computing\Data Structures\DataStructures\DataStructuresLibrary\bin\Release\netcoreapp3.1\DataStructuresLibrary.dll</HintPath>
     </Reference>
