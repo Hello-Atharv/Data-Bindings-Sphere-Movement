@@ -5,7 +5,7 @@ using System.ComponentModel;
 
 namespace DataBindingsSphereMovement
 {
-    class Particle : INotifyPropertyChanged
+    public class Particle : INotifyPropertyChanged
     {
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -14,6 +14,9 @@ namespace DataBindingsSphereMovement
         private Vector position;
         private Vector velocity;
         private Attributes properties;
+        private Node quadtreeNode;
+
+        private string underCollision = "no";
 
         private Random rand = new Random();
 
@@ -41,6 +44,18 @@ namespace DataBindingsSphereMovement
         public Attributes Properties
         {
             get { return properties; }
+        }
+
+        public Node QuadtreeNode
+        {
+            get { return quadtreeNode; }
+            set { quadtreeNode = value; }
+        }
+
+        public string UnderCollision
+        {
+            get { return underCollision; }
+            set { underCollision = value; OnPropertyChanged("UnderCollision"); }
         }
 
 

@@ -5,30 +5,50 @@ using System.ComponentModel;
 
 namespace DataBindingsSphereMovement
 {
-    class Attributes : INotifyPropertyChanged
+    public class Attributes : INotifyPropertyChanged
     {
 
         public event PropertyChangedEventHandler PropertyChanged;
-    
-        private double radius;
+
+        private double diameter;
         private double mass;
 
-        public Attributes(double radius, double mass)
+        private List<Particle> particles;
+
+        public Attributes(double diameter, double mass)
         {
-            this.radius = radius;
+            this.diameter = diameter;
             this.mass = mass;
+
+            particles = new List<Particle>();
         }
 
-        public double Radius
+        public void ParticleAdded(Particle particle)
         {
-            get { return radius; }
-            set { radius = value; OnPropertyChanged("Radius"); }
+            particles.Add(particle);
+        }
+
+        public double Diameter
+        {
+            get { return diameter; }
+            set { diameter = value; OnPropertyChanged("Diameter"); }
         }
         public double Mass
         {
             get { return mass; }
             set { mass = value; OnPropertyChanged("Mass"); }
         }
+
+        public List<Particle> Particles
+        {
+            get { return particles; }
+        }
+
+        public int GroupCount
+        {
+            get { return particles.Count;}
+        }
+
         protected void OnPropertyChanged(string propertyName)
         {
             if (PropertyChanged != null)

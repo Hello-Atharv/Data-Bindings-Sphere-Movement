@@ -5,7 +5,7 @@ using System.ComponentModel;
 
 namespace DataBindingsSphereMovement
 {
-    class Vector : INotifyPropertyChanged
+    public class Vector : INotifyPropertyChanged
     {
 
         public event PropertyChangedEventHandler PropertyChanged;

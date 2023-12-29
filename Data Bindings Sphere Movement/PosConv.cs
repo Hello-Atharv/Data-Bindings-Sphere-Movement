@@ -8,15 +8,21 @@ using System.Windows.Data;
 
 namespace DataBindingsSphereMovement
 {
-    class PosConv : IValueConverter
+    public class PosConv : IValueConverter
     {
+        private double radius;
+
+        public PosConv(double diameter)
+        {
+            radius = diameter/2;
+        }
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             
             object pos;
             
-            pos = (object)((double) value).ToString();   
+            pos = (object)((double) value+radius);   
             
             return pos;
         }

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DataBindingsSphereMovement
 {
-    class Quadtree
+    public class Quadtree
     {
         private Node root;
 
@@ -16,72 +16,87 @@ namespace DataBindingsSphereMovement
         private const int southEast = 2;
         private const int northEast = 3;
 
+        private const int maxParticles = 2;
+
+        private const double splittingConst = 0.7;
+
         private List<Node> nodes;
+
+        private List<Node> adjNodes;
+        private List<Node> gravNodes;
 
         public Quadtree(Vector rootTopLeft, Vector rootBottomRight)
         {
             root = new Node(rootTopLeft, rootBottomRight);
-            
+            adjNodes = new List<Node>();
         }
 
         public void BuildQuadtree(List<Particle> particles){
             nodes = new List<Node>();
             nodes.Add(root);
-            BuildingProcess(root, ref particles);
+            BuildingProcess(root, particles);
+            AddGravityInfo();
         }
 
-        private void BuildingProcess(Node parentNode, ref List<Particle> particles)
+        private void BuildingProcess(Node parentNode, List<Particle> particles)
         {
-            Node[] nodesplit = splitQuadrant(parentNode);
-            Tuple<Particle, bool> particleCheck;
+            Node[] nodesplit = SplitQuadrant(parentNode);
+            Tuple<List<Particle>, bool> particleCheck;
 
             for(int i = 0; i < nodesplit.Length; i++)
             {
-                particleCheck = CheckParticlesInRectangle(nodesplit[i], ref particles);
+                particleCheck = CheckParticlesInRectangle(nodesplit[i], particles);
                 if (particleCheck.Item2)
                 {
-                    BuildingProcess(nodesplit[i], ref particles);
-                    nodes.Add(nodesplit[i]);
+                    Node node = nodesplit[i];
+                    parentNode.Children[i] = node;
+                    node.Parent = parentNode;
+
+                    BuildingProcess(node, particles);
+                    nodes.Add(node);
                 }
-                else if(particleCheck.Item1 != null)
+                else
                 {
-                    nodesplit[i].ContainedParticle = particleCheck.Item1;
-                    parentNode.Children[i] = nodesplit[i];
-                    nodesplit[i].Parent = parentNode;
-                    nodes.Add(nodesplit[i]);
+                    if (particleCheck.Item1.Count != 0)
+                    {
+                        nodesplit[i].ContainedParticles = particleCheck.Item1;
+                        foreach(Particle p in nodesplit[i].ContainedParticles)
+                        {
+                            p.QuadtreeNode = nodesplit[i];
+                        }
+                        parentNode.Children[i] = nodesplit[i];
+                        nodesplit[i].Parent = parentNode;
+                        nodes.Add(nodesplit[i]);
+                    }
                 }
             }
         }
 
-        private Tuple<Particle,bool> CheckParticlesInRectangle(Node node, ref List<Particle> particles)
+        private Tuple<List<Particle>,bool> CheckParticlesInRectangle(Node node, List<Particle> particles)
         {
-            int no_particles = 0;
             int index = 0;
             bool splitQuadrant = false;
 
-            Particle particle = null;
+            List<Particle> partInNode = new List<Particle>();
 
-            while(index < particles.Count && no_particles < 2) { 
+            while(index < particles.Count &&  partInNode.Count < maxParticles+1) { 
                 if (particles[index].Position.XValue > node.TopLeft.XValue && particles[index].Position.XValue < node.BottomRight.XValue && particles[index].Position.YValue > node.TopLeft.YValue && particles[index].Position.YValue < node.BottomRight.YValue)
                 {
-                    no_particles++;
+                    partInNode.Add(particles[index]);
                 }
                 index++;
             }
 
-            if (no_particles == 1)
+            if(partInNode.Count > maxParticles)
             {
-                particle = particles[index - 1];
-            }
-            else if(no_particles >= 2){
                 splitQuadrant = true;
             }
-
-            return new Tuple<Particle, bool>(particle,splitQuadrant);
+                     
+            return new Tuple<List<Particle>, bool>(partInNode,splitQuadrant);
             
         }
 
-        private Node[] splitQuadrant(Node parentNode)
+        private Node[] SplitQuadrant(Node parentNode)
         {
             Node[] nodes = new Node[4];
             Vector diagonal = parentNode.BottomRight.SubtractVectors(false, parentNode.TopLeft);
@@ -95,6 +110,187 @@ namespace DataBindingsSphereMovement
             nodes[northEast] = new Node(parentNode.TopLeft.AddVectors(false,deltaIHat), parentNode.BottomRight.SubtractVectors(false,deltaJHat));
 
             return nodes;
+        }
+
+
+
+
+        public List<Node> FindAdjacentNodes(Node node)
+        {
+
+            adjNodes = new List<Node>();
+            CollisionTraverse(root, node);
+
+            return adjNodes;
+        }
+
+        private void CollisionTraverse(Node node, Node toCompare)
+        {
+            foreach(Node n in node.Children)
+            {
+                if (n != null && toCompare!= null)
+                {
+                    if (AreIntersecting(n, toCompare))
+                    {
+                        if (n.ContainedParticles == null)
+                        {
+                            CollisionTraverse(n, toCompare);
+                        }
+                        else
+                        {
+                            adjNodes.Add(n);
+                        }
+                    }
+                }
+            }           
+        }
+
+        private bool AreIntersecting(Node node1, Node node2)
+        {
+            bool intersect = false;
+
+            double x1TopL = node1.TopLeft.DotProduct(iHat);
+            double y1TopL = node1.TopLeft.DotProduct(jHat);
+            double x1BotR = node1.BottomRight.DotProduct(iHat);
+            double y1BotR = node1.BottomRight.DotProduct(jHat);
+            double x2TopL = node2.TopLeft.DotProduct(iHat);
+            double y2TopL = node2.TopLeft.DotProduct(jHat);
+            double x2BotR = node2.BottomRight.DotProduct(iHat);
+            double y2BotR = node2.BottomRight.DotProduct(jHat);
+
+            if ((y2TopL >= y1TopL && y2TopL <= y1BotR) || (y2BotR >= y1TopL && y2BotR <= y1BotR))
+            {
+                if ((x2TopL <= x1BotR && x2TopL >= x1TopL) || (x2BotR <= x1BotR && x2BotR >= x1TopL))
+                {
+                    intersect = true;
+                }
+            }
+            return intersect;
+        }
+
+        public double FindNodeMass(Node node)
+        {
+            double totalMass = 0;
+
+            foreach(Particle p in node.ContainedParticles)
+            {
+                totalMass = totalMass + p.Properties.Mass;
+            }
+
+            return totalMass;
+        }
+
+        public Vector FindNodeWeightedSum(Node node)
+        {
+            Vector weightedSum = new Vector(0, 0);
+
+            foreach (Particle p in node.ContainedParticles)
+            {
+                weightedSum.AddVectors(true, p.Position.ScalarMultiply(false, p.Properties.Mass));
+            }
+
+            return weightedSum;
+        }
+
+        public void AddGravityInfo()
+        {
+            COMTraverse(root);
+        }
+
+        private void COMTraverse(Node node)
+        {
+            Vector weightedSum = new Vector(0, 0);
+            node.NodeMass = 0;
+            foreach(Node n in node.Children)
+            {
+                if (n != null)
+                {
+                    if (CheckLeafNode(n))
+                    {
+                        node.NodeMass = node.NodeMass + FindNodeMass(n);
+                        weightedSum.AddVectors(true, FindNodeWeightedSum(n));
+                        
+                    }
+                    else
+                    {
+                        COMTraverse(n);
+                        node.NodeMass = node.NodeMass + n.NodeMass;
+                        weightedSum.AddVectors(true, n.NodeCOM.ScalarMultiply(false, n.NodeMass));
+                    }
+                    
+                }
+            }
+            node.NodeCOM = weightedSum.ScalarMultiply(false, 1/node.NodeMass);
+        }
+
+        public void GlobalGravField(Particle particle)
+        {
+            GravTraverse(root, particle);
+        }
+
+        private void GravTraverse(Node node, Particle particle)
+        {
+            if (node != null)
+            {
+                if (CheckLeafNode(node))
+                {
+                    gravNodes.Add(node);
+                }
+                else
+                {
+                    if (GravTraverseCondition(node, particle)){
+                        foreach (Node n in node.Children)
+                        {
+                            GravTraverse(n, particle);
+                        }
+                    }
+                    else
+                    {
+                        gravNodes.Add(node);
+                    }
+                }
+            }
+        }
+
+        private bool GravTraverseCondition(Node node, Particle particle)
+        {
+            bool traverseNode = false;
+            double sepDistance = particle.Position.SepDistance(node.NodeCOM);
+
+            if(FindIntermediarySize(node)/sepDistance > splittingConst)
+            {
+                traverseNode = true;
+            }
+
+            return traverseNode;
+        }
+
+        private double FindIntermediarySize(Node node)
+        {
+            Vector diagonal = node.BottomRight.SubtractVectors(false, node.TopLeft);
+            double size = Math.Abs(diagonal.DotProduct(iHat)) + Math.Abs(diagonal.DotProduct(jHat));
+            double intermediarySize = size / 2;
+
+            return intermediarySize;
+        }
+
+        public bool CheckLeafNode(Node node)
+        {
+            bool isLeafNode = false;
+            int nullCount = 0;
+            foreach (Node n in node.Children)
+            {
+                if (n == null)
+                {
+                    nullCount++;
+                }
+            }
+            if (nullCount == node.Children.Length)
+            {
+                isLeafNode = true;
+            }
+
+            return isLeafNode;
         }
 
         public List<Node> Nodes

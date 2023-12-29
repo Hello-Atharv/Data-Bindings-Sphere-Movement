@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <RootNamespace>Data_Bindings_Sphere_Movement</RootNamespace>
+    <RootNamespace>DataBindingsSphereMovement</RootNamespace>
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 

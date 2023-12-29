@@ -3,7 +3,9 @@ using System.Windows.Threading;
 
 namespace DataBindingsSphereMovement
 {
-    class SimBuild
+
+    public delegate void NotifyClosing();
+    public class SimBuild
     {
         int ticks;
         private DispatcherTimer timer;
@@ -20,7 +22,6 @@ namespace DataBindingsSphereMovement
             timer.Tick += GameTimerEvent;
             timer.Interval = TimeSpan.FromMilliseconds(deltaT * 1000);
             timer.Start();
-            ParticleGroupAdd();
         }
 
         private void GameTimerEvent(object sender, EventArgs e)

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DataBindingsSphereMovement
 {
-    class Node
+    public class Node
     {
 
         private Vector topLeft;
@@ -13,7 +13,10 @@ namespace DataBindingsSphereMovement
         private Node parent;
         private Node[] children = new Node[4];
 
-        private Particle containedParticle;
+        private List<Particle> containedParticle;
+
+        private double nodeMass;
+        private Vector nodeCOM;
 
         public Node(Vector topLeft, Vector bottomRight){
             this.topLeft = topLeft;
@@ -44,10 +47,22 @@ namespace DataBindingsSphereMovement
             set { children = value; }
         }
 
-        public Particle ContainedParticle
+        public List<Particle> ContainedParticles
         {
             get { return containedParticle; }
             set { containedParticle = value; }
+        }
+
+        public double NodeMass
+        {
+            get { return nodeMass; }
+            set { nodeMass = value; }
+        }
+
+        public Vector NodeCOM
+        {
+            get { return nodeCOM; }
+            set { nodeCOM = value; }
         }
 
 
