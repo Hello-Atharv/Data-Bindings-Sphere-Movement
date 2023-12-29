@@ -17,19 +17,39 @@ namespace DataBindingsSphereMovement
     /// Interaction logic for Window1.xaml
     /// </summary>
     /// 
-    internal struct ParticleGroupProperties
+    public class ParticleGroupProperties : INotifyPropertyChanged
     {
         public Binding diameter;
         public Binding mass;
 
-        public int colourIndex;
+        public SolidColorBrush colour;
+        public event PropertyChangedEventHandler PropertyChanged;
 
-         public ParticleGroupProperties(Binding diameter, Binding mass, int colourIndex)
+        public ParticleGroupProperties(Binding diameter, Binding mass, SolidColorBrush colour)
         {
             this.diameter = diameter;
             this.mass = mass;
+            this.colour = colour;
+        }
 
-            this.colourIndex = colourIndex;
+        public void ChangeColour(SolidColorBrush newColour)
+        {
+            colour = newColour;
+            OnPropertyChanged("Colour");
+        }
+
+        public SolidColorBrush Colour
+        {
+            get { return colour; }
+            set { colour = value; OnPropertyChanged("Colour"); }
+        }
+
+        public void OnPropertyChanged(string propertyName)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
         }
 
     }
@@ -41,11 +61,10 @@ namespace DataBindingsSphereMovement
         private int noGroups = 0;
         private Dictionary<int, ParticleGroupProperties> particleGroups;
 
-        private SolidColorBrush selectedColour;
-
         private const int red = 113; //113 is index for colour red (default starting colour for particles)
 
         public event NotifyClosing ClosePanel;
+
 
         private Random rand = new Random();
 
@@ -58,10 +77,12 @@ namespace DataBindingsSphereMovement
             builder = simBuild;
             DataContext = this;
 
+            AddParticleGroup(null, null);
+
             ColourSelector.ItemsSource = typeof(Colors).GetProperties();
             ColourSelector.SelectedIndex = red;
 
-            AddParticleGroup(null, null);
+            
             SetBindings();
             /*
             Binding radius = new Binding("Radius");
@@ -74,6 +95,8 @@ namespace DataBindingsSphereMovement
             MassSlider.SetBinding(Slider.ValueProperty, mass);*/
         }
 
+        
+
         private void AddParticleGroup(object sender, RoutedEventArgs e)
         {
             builder.ParticleGroupAdd();
@@ -85,9 +108,7 @@ namespace DataBindingsSphereMovement
             Binding mass = new Binding("Mass");
             mass.Source = builder.SimWorld.AttributesDictionary[noGroups];
 
-            int colourIndex = 0;
-
-            ParticleGroupProperties newGroup = new ParticleGroupProperties(diameter, mass, colourIndex);
+            ParticleGroupProperties newGroup = new ParticleGroupProperties(diameter, mass, new SolidColorBrush(Colors.Red));
             particleGroups.Add(noGroups, newGroup);
             
             CheckBoundaryValues();
@@ -114,11 +135,10 @@ namespace DataBindingsSphereMovement
 
         private void UpdateColour(object sender, SelectionChangedEventArgs e){
             string colour = ColourSelector.SelectedItem.ToString().Split(' ')[1]; //[1] to get second value in array
-            selectedColour = new SolidColorBrush();
+            SolidColorBrush selectedColour = new SolidColorBrush();
             selectedColour.Color = (Color)ColorConverter.ConvertFromString(colour);
-            ColourBox.Fill = selectedColour;
+            particleGroups[groupDisplayed].ChangeColour(selectedColour);
         }
-
 
         private void CheckBoundaryValues()
         {
@@ -160,6 +180,12 @@ namespace DataBindingsSphereMovement
         public int GroupDisplayed
         {
             get { return groupDisplayed; }
+        }
+
+        public Dictionary<int, ParticleGroupProperties> ParticleGroups
+        {
+            get { return particleGroups; }
+            set { particleGroups = value; }
         }
     }
 }

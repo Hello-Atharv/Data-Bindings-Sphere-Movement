@@ -18,7 +18,7 @@ namespace DataBindingsSphereMovement
 
         private const int maxParticles = 2;
 
-        private const double splittingConst = 0.7;
+        private const double splittingConst = 0;
 
         private List<Node> nodes;
 
@@ -29,6 +29,7 @@ namespace DataBindingsSphereMovement
         {
             root = new Node(rootTopLeft, rootBottomRight);
             adjNodes = new List<Node>();
+            gravNodes = new List<Node>();
         }
 
         public void BuildQuadtree(List<Particle> particles){
@@ -223,9 +224,12 @@ namespace DataBindingsSphereMovement
             node.NodeCOM = weightedSum.ScalarMultiply(false, 1/node.NodeMass);
         }
 
-        public void GlobalGravField(Particle particle)
+        public List<Node> GlobalGravField(Particle particle)
         {
+            gravNodes = new List<Node>();
             GravTraverse(root, particle);
+
+            return gravNodes;
         }
 
         private void GravTraverse(Node node, Particle particle)

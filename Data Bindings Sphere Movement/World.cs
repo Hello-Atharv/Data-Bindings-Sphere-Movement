@@ -102,6 +102,11 @@ namespace DataBindingsSphereMovement
             Vector correction;
             double perimeterSafetyFactor;
 
+            Vector accel = new Vector(0, 0);
+            double sepDistance;
+            Vector sepVector;
+            double scaler;
+
             foreach (Particle p in particles)
             {
                 perimeterSafetyFactor = -15;
@@ -109,33 +114,70 @@ namespace DataBindingsSphereMovement
                 p.Position.AddVectors(true,p.Velocity.ScalarMultiply(false,deltaT*(tempCoeff*tempMultiplier)));
 
                 //To implemenent unifrom grav field
-                UniformGravField(p);
+                if (uniformGravEnabled)
+                {
+                    UniformGravField(p);
+                }
+
+
                 GlobalGravField(p);
 
-
                 /*
-                if(p.Position.XValue < (offset - perimeterSafetyFactor-p.Radius))
-                {
-                    correction = new Vector(p.Radius, 0);
-                    vectors.AddVectors(true, p.Position, correction);
-                }
-                if (p.Position.XValue > (offset + perimeterWidth + perimeterSafetyFactor + p.Radius))
-                {
-                    correction = new Vector(-1*p.Radius, 0);
-                    vectors.AddVectors(true, p.Position, correction);
-                }
-                if (p.Position.YValue < (offset - perimeterSafetyFactor - p.Radius))
-                {
-                    correction = new Vector(0, p.Radius);
-                    vectors.AddVectors(true, p.Position, correction);
-                }
-                if (p.Position.YValue > (offset + perimeterHeight + perimeterSafetyFactor + p.Radius))
-                {
-                    correction = new Vector(0, -1*p.Radius);
-                    vectors.AddVectors(true, p.Position, correction);
-                }
-                */
+                List<Node> gravContenders = quadtree.GlobalGravField(p);
+
+
+                
+                    foreach (Node grav in gravContenders)
+                    {
+                        if (quadtree.CheckLeafNode(grav) && grav.ContainedParticles!=null)
+                        {
+                            
+                            foreach (Particle target in grav.ContainedParticles)
+                            {
+                            if (target != p)
+                            {
+                                sepDistance = p.Position.SepDistance(target.Position);
+                                sepVector = p.Position.SubtractVectors(false, target.Position);
+                                scaler =  -1*(target.Properties.Mass * gravConstant) / (Math.Pow(sepDistance, 2)); //this number should be 3 but changed to two to make effects of gravity more noticeable
+                                accel.AddVectors(true, sepVector.ScalarMultiply(false, scaler));
+                            }
+                            }
+                        }
+                        else
+                        {
+                            sepDistance = p.Position.SepDistance(grav.NodeCOM);
+                            sepVector = p.Position.SubtractVectors(false, grav.NodeCOM);
+                            scaler = -1*(grav.NodeMass * gravConstant) / (Math.Pow(sepDistance, 2));
+                            accel.AddVectors(true, sepVector.ScalarMultiply(false, scaler));
+                        }
+                    }
+                
+                p.Velocity.AddVectors(true, accel);
+            */
+
+            /*
+            if(p.Position.XValue < (offset - perimeterSafetyFactor-p.Radius))
+            {
+                correction = new Vector(p.Radius, 0);
+                vectors.AddVectors(true, p.Position, correction);
             }
+            if (p.Position.XValue > (offset + perimeterWidth + perimeterSafetyFactor + p.Radius))
+            {
+                correction = new Vector(-1*p.Radius, 0);
+                vectors.AddVectors(true, p.Position, correction);
+            }
+            if (p.Position.YValue < (offset - perimeterSafetyFactor - p.Radius))
+            {
+                correction = new Vector(0, p.Radius);
+                vectors.AddVectors(true, p.Position, correction);
+            }
+            if (p.Position.YValue > (offset + perimeterHeight + perimeterSafetyFactor + p.Radius))
+            {
+                correction = new Vector(0, -1*p.Radius);
+                vectors.AddVectors(true, p.Position, correction);
+            }
+            */
+        }
 
         }
 
@@ -349,10 +391,9 @@ namespace DataBindingsSphereMovement
 
         public void UniformGravField(Particle p)
         {
-            if (uniformGravEnabled)
-            {
+           
                 p.Velocity.AddVectors(true, new Vector(0, uniformGravStrength));
-            }
+            
         }
 
         public void GlobalGravField(Particle p)

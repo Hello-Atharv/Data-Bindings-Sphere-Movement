@@ -153,7 +153,7 @@ namespace DataBindingsSphereMovement
 
             Binding diameter = new Binding("Diameter");
 
-            Binding colour = new Binding();
+            Binding colour = new Binding("Colour");
 
             //xPos.Converter = posConv;
             //yPos.Converter = posConv;
@@ -181,9 +181,12 @@ namespace DataBindingsSphereMovement
             yPos.Source = builder.SimWorld.AllParticles[builder.SimWorld.ParticleCount - 1].Position;
 
             diameter.Source = diameterGroupPath;
+            colour.Source = partPanel.ParticleGroups[partPanel.GroupDisplayed];
             
             ellipse.SetBinding(Canvas.HeightProperty, diameter);
             ellipse.SetBinding(Canvas.WidthProperty, diameter);
+
+            ellipse.SetBinding(Ellipse.FillProperty, colour);
 
             ellipse.SetBinding(Canvas.LeftProperty, xPos);
             ellipse.SetBinding(Canvas.TopProperty, yPos);

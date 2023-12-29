@@ -309,8 +309,7 @@
         <Label Content="Diameter" Grid.Row="3" Panel.ZIndex="3" Grid.Column="0" FontSize="14" FontWeight="Bold" Grid.ColumnSpan="2" Margin="30,-2,0,0"/>
         <Label Content="Mass" Grid.Row="4" Panel.ZIndex="3" Grid.Column="0" FontSize="14" FontWeight="Bold" Grid.ColumnSpan="2" Margin="30,-2,0,0"/>
         <Label Content="Colour" Grid.Row="5" Panel.ZIndex="3" Grid.Column="0" FontSize="14" FontWeight="Bold" Grid.ColumnSpan="2" Margin="30,-2,0,0"/>
-        <Rectangle Name="ColourBox" Width="20" Height="20" Grid.Row="5" Grid.Column="6" Panel.ZIndex="3" Stroke="Black" StrokeThickness="1.5" Margin="-15,-20,0,0"/>
-        <ComboBox Name ="ColourSelector" Grid.Row="5" Grid.Column="3" Grid.ColumnSpan="3" Height="25" Width="150" Panel.ZIndex="3" Margin="0,-20,0,0" SelectionChanged="UpdateColour">
+        <ComboBox Name ="ColourSelector" Grid.Row="5" Grid.Column="4" Grid.ColumnSpan="3" Height="25" Width="150" Panel.ZIndex="3" Margin="-30,-20,0,0" SelectionChanged="UpdateColour">
             <ComboBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">

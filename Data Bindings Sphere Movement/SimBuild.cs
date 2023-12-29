@@ -34,10 +34,11 @@ namespace DataBindingsSphereMovement
 
         private void UpdateSim()
         {
+            SimWorld.RebuildQuadtree();
             SimWorld.UpdatePos(deltaT);
             SimWorld.CollisionsAgainstPerimeter();
             SimWorld.CollisionsBetweenParticles();
-            SimWorld.RebuildQuadtree();
+            
         }
 
         public void ParticleAdd(double xPos, double yPos)
