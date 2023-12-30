@@ -16,7 +16,9 @@ namespace DataBindingsSphereMovement
         private TemperaturePanel tempPanel;
         private GravityPanel gravityPanel;
         private CollisionPanel collPanel;
-        
+
+        private ColourConverter colourConv;
+
         private bool mouseDown = false;
         private bool showQuadtree = false;
 
@@ -46,6 +48,9 @@ namespace DataBindingsSphereMovement
             partPanel.ClosePanel += ClosePartPanel;
             gravityPanel.ClosePanel += CloseGravityPanel;
             collPanel.ClosePanel += CloseCollisionPanel;
+
+            colourConv = new ColourConverter();
+
         }
 
         private void UpdateGameTime()
@@ -122,7 +127,7 @@ namespace DataBindingsSphereMovement
         */
         private void SphereCreation()
         {
-            const double mouseOffset = sphereSize / 2; //problem of collisions is due to offsets - fix sphereSize, mouseOffset and PosConv converter
+            double mouseOffset = builder.SimWorld.AttributesDictionary[builder.SimWorld.GroupSelected].Diameter / 2; //problem of collisions is due to offsets - fix sphereSize, mouseOffset and PosConv converter
             double xPos;
             double yPos;
             if (mouseDown)
@@ -146,7 +151,6 @@ namespace DataBindingsSphereMovement
             double diameterPath = diameterGroupPath.Diameter;
 
             PosConv posConv = new PosConv(diameterPath);
-            //RadiusConv radiusConv = new RadiusConv();
 
             Binding xPos = new Binding("XValue");
             Binding yPos = new Binding("YValue");
@@ -159,6 +163,8 @@ namespace DataBindingsSphereMovement
             //yPos.Converter = posConv;
 
             //diameter.Converter = radiusConv;
+
+            colour.Converter = colourConv;
 
             Ellipse ellipse = new Ellipse()
             {
@@ -181,7 +187,7 @@ namespace DataBindingsSphereMovement
             yPos.Source = builder.SimWorld.AllParticles[builder.SimWorld.ParticleCount - 1].Position;
 
             diameter.Source = diameterGroupPath;
-            colour.Source = partPanel.ParticleGroups[partPanel.GroupDisplayed];
+            colour.Source = partPanel.ParticleGroups[builder.SimWorld.GroupSelected];
             
             ellipse.SetBinding(Canvas.HeightProperty, diameter);
             ellipse.SetBinding(Canvas.WidthProperty, diameter);

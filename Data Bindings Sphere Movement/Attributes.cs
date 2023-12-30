@@ -13,19 +13,20 @@ namespace DataBindingsSphereMovement
         private double diameter;
         private double mass;
 
-        private List<Particle> particles;
+        private int groupCount;
 
         public Attributes(double diameter, double mass)
         {
             this.diameter = diameter;
             this.mass = mass;
 
-            particles = new List<Particle>();
+            groupCount = 0;
         }
 
-        public void ParticleAdded(Particle particle)
+        public void ParticleAdded()
         {
-            particles.Add(particle);
+            groupCount++;
+            OnPropertyChanged("GroupCount");
         }
 
         public double Diameter
@@ -39,14 +40,10 @@ namespace DataBindingsSphereMovement
             set { mass = value; OnPropertyChanged("Mass"); }
         }
 
-        public List<Particle> Particles
-        {
-            get { return particles; }
-        }
 
         public int GroupCount
         {
-            get { return particles.Count;}
+            get { return groupCount;}
         }
 
         protected void OnPropertyChanged(string propertyName)

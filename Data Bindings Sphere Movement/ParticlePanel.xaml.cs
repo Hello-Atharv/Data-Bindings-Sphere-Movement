@@ -19,32 +19,46 @@ namespace DataBindingsSphereMovement
     /// 
     public class ParticleGroupProperties : INotifyPropertyChanged
     {
-        public Binding diameter;
-        public Binding mass;
+        private Binding diameter;
+        private Binding mass;
+        private string colour;
+        private Binding groupCount;
 
-        public SolidColorBrush colour;
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public ParticleGroupProperties(Binding diameter, Binding mass, SolidColorBrush colour)
+        public ParticleGroupProperties(Binding diameter, Binding mass, Binding groupCount, string colour)
         {
             this.diameter = diameter;
             this.mass = mass;
             this.colour = colour;
+            this.groupCount = groupCount;
         }
 
-        public void ChangeColour(SolidColorBrush newColour)
-        {
-            colour = newColour;
-            OnPropertyChanged("Colour");
-        }
-
-        public SolidColorBrush Colour
+        public string Colour
         {
             get { return colour; }
             set { colour = value; OnPropertyChanged("Colour"); }
         }
 
-        public void OnPropertyChanged(string propertyName)
+        public Binding Diameter
+        {
+            get { return diameter; }
+            set { diameter = value; }
+        }
+        public Binding Mass
+        {
+            get { return mass; }
+            set { mass = value; }
+        }
+
+        public Binding GroupCount
+        {
+            get { return groupCount; }
+            set { groupCount = value; }
+        }
+
+
+        protected void OnPropertyChanged(string propertyName)
         {
             if (PropertyChanged != null)
             {
@@ -54,7 +68,7 @@ namespace DataBindingsSphereMovement
 
     }
 
-    public partial class ParticlePanel : Window
+    public partial class ParticlePanel : Window, INotifyPropertyChanged
     {
         private SimBuild builder;
         private int groupDisplayed = 1;
@@ -65,15 +79,17 @@ namespace DataBindingsSphereMovement
 
         public event NotifyClosing ClosePanel;
 
+        public event PropertyChangedEventHandler PropertyChanged;
 
-        private Random rand = new Random();
+        private IntStringConverter valueConv;
 
 
         public ParticlePanel(SimBuild simBuild) 
         {
             InitializeComponent();
             particleGroups = new Dictionary<int, ParticleGroupProperties>();
-            
+            valueConv = new IntStringConverter();
+
             builder = simBuild;
             DataContext = this;
 
@@ -102,13 +118,18 @@ namespace DataBindingsSphereMovement
             builder.ParticleGroupAdd();
             noGroups++;
 
+
             Binding diameter = new Binding("Diameter");
             diameter.Source = builder.SimWorld.AttributesDictionary[noGroups];
 
             Binding mass = new Binding("Mass");
             mass.Source = builder.SimWorld.AttributesDictionary[noGroups];
 
-            ParticleGroupProperties newGroup = new ParticleGroupProperties(diameter, mass, new SolidColorBrush(Colors.Red));
+            Binding groupCount = new Binding("GroupCount");
+            groupCount.Source = builder.SimWorld.AttributesDictionary[noGroups];
+            groupCount.Converter = valueConv;
+            
+            ParticleGroupProperties newGroup = new ParticleGroupProperties(diameter, mass, groupCount, "Red");
             particleGroups.Add(noGroups, newGroup);
             
             CheckBoundaryValues();
@@ -129,15 +150,14 @@ namespace DataBindingsSphereMovement
 
         private void SetBindings()
         {
-            DiameterSlider.SetBinding(Slider.ValueProperty, particleGroups[groupDisplayed].diameter);
-            MassSlider.SetBinding(Slider.ValueProperty, particleGroups[groupDisplayed].mass);
+            DiameterSlider.SetBinding(Slider.ValueProperty, particleGroups[groupDisplayed].Diameter);
+            MassSlider.SetBinding(Slider.ValueProperty, particleGroups[groupDisplayed].Mass);
+            GroupCountLabel.SetBinding(Label.ContentProperty, particleGroups[groupDisplayed].GroupCount);
         }
 
         private void UpdateColour(object sender, SelectionChangedEventArgs e){
-            string colour = ColourSelector.SelectedItem.ToString().Split(' ')[1]; //[1] to get second value in array
-            SolidColorBrush selectedColour = new SolidColorBrush();
-            selectedColour.Color = (Color)ColorConverter.ConvertFromString(colour);
-            particleGroups[groupDisplayed].ChangeColour(selectedColour);
+            string colour = GetColourStringFromSelector(ColourSelector.SelectedItem);
+            particleGroups[groupDisplayed].Colour = colour;
         }
 
         private void CheckBoundaryValues()
@@ -154,11 +174,6 @@ namespace DataBindingsSphereMovement
             }
         }
 
-        public void UpdateGroupNumber()
-        {
-            GroupNumber.Content = groupDisplayed;
-        }
-
         private void OnPanelClosed(object sender, System.ComponentModel.CancelEventArgs e)
         {
             e.Cancel = true;
@@ -167,25 +182,72 @@ namespace DataBindingsSphereMovement
 
         private void GroupDisplayedChanged()
         {
+            OnPropertyChanged("GroupDisplayed");
             CheckBoundaryValues();
-            UpdateGroupNumber();
             SetBindings();
+            GroupChangedColourChange();
+            ChangeSpawnButtonStatus();
+        }
+
+        private void GroupChangedColourChange()
+        {
+            string colour = particleGroups[groupDisplayed].Colour;
+
+            bool found = false;
+            int i = 0;
+            while (!found && i<ColourSelector.Items.Count)
+            {
+                if(GetColourStringFromSelector(ColourSelector.Items.GetItemAt(i)) == colour)
+                {
+                    found = true;
+                }
+                i++;
+            }
+
+            ColourSelector.SelectedIndex = i-1;
+        }
+
+        private string GetColourStringFromSelector(object item)
+        {
+            string value = item.ToString().Split(' ')[1]; //[1] to get second value in array
+            return value;
         }
 
         private void SpawnChange(object sender, RoutedEventArgs e)
         {
             builder.SimWorld.GroupSelected = groupDisplayed;
+            ChangeSpawnButtonStatus();
+        }
+
+        private void ChangeSpawnButtonStatus()
+        {
+            if(groupDisplayed == builder.SimWorld.GroupSelected)
+            {
+                SpawnButton.Content = "—";
+            }
+            else
+            {
+                SpawnButton.Content = "Spawn";
+            }
         }
 
         public int GroupDisplayed
         {
-            get { return groupDisplayed; }
+            get { return groupDisplayed;}
         }
 
         public Dictionary<int, ParticleGroupProperties> ParticleGroups
         {
             get { return particleGroups; }
             set { particleGroups = value; }
+        }
+
+        protected void OnPropertyChanged(string propertyName)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
         }
     }
 }

@@ -87,7 +87,7 @@ namespace DataBindingsSphereMovement
 
             Particle newParticle = new Particle(xPos, yPos, xVel, yVel, attributesDictionary[groupSelected]);
             particles.Add(newParticle);
-            attributesDictionary[groupSelected].ParticleAdded(newParticle);
+            attributesDictionary[groupSelected].ParticleAdded();
             OnPropertyChanged("ParticleCount");
         }
 
