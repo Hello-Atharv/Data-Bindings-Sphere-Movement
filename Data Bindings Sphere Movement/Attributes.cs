@@ -10,14 +10,14 @@ namespace DataBindingsSphereMovement
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        private double diameter;
+        private double radius;
         private double mass;
 
         private int groupCount;
 
-        public Attributes(double diameter, double mass)
+        public Attributes(double radius, double mass)
         {
-            this.diameter = diameter;
+            this.radius = radius;
             this.mass = mass;
 
             groupCount = 0;
@@ -29,10 +29,10 @@ namespace DataBindingsSphereMovement
             OnPropertyChanged("GroupCount");
         }
 
-        public double Diameter
+        public double Radius
         {
-            get { return diameter; }
-            set { diameter = value; OnPropertyChanged("Diameter"); }
+            get { return radius; }
+            set { radius = value; OnPropertyChanged("Radius"); }
         }
         public double Mass
         {

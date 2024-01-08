@@ -3,10 +3,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Data_Bindings_Sphere_Movement"
+        xmlns:local="clr-namespace:DataBindingsSphereMovement"
         mc:Ignorable="d"
         Title="Particles" Height="400" Width="400" Background="#A9A3A3" BorderBrush="Black" BorderThickness="5" Closing="OnPanelClosed" ResizeMode="NoResize">
     <Window.Resources>
+
+        <local:ColourTextConverter x:Key="textConv"/>
         <Style x:Key="RepeatButtonTransparent" TargetType="{x:Type RepeatButton}">
             <Setter Property="OverridesDefaultStyle" Value="true"/>
             <Setter Property="Background" Value="Transparent"/>
@@ -302,11 +304,11 @@
         </Border>
 
         <Button Name="SpawnButton" FontWeight="Bold" FontSize="14" Width ="50" Height="25" Panel.ZIndex="3" Background="#857E7E" BorderBrush="Black" BorderThickness="1.5" Grid.Column="5" VerticalAlignment="Top" Grid.Row="2" Grid.ColumnSpan="3" Content="—" Margin="0,9,0,0" Click="SpawnChange"/>
-        <Slider Style="{DynamicResource SliderStyle}" Name="DiameterSlider" Width="130"  Grid.Column="3" Grid.Row="3" Panel.ZIndex="3" Grid.ColumnSpan="4" Margin="-25,8,0,0" Grid.RowSpan="2" Maximum="50" Minimum="10" TickFrequency="2" TickPlacement="BottomRight" IsSnapToTickEnabled="True"/>
-        <TextBox Text="{Binding ElementName=DiameterSlider, Path=Value}" Grid.Row="3" Grid.Column="6" Panel.ZIndex="3" Width="40" Height="25" Margin="-20,-15,0,0"/>
+        <Slider Style="{DynamicResource SliderStyle}" Name="RadiusSlider" Width="130"  Grid.Column="3" Grid.Row="3" Panel.ZIndex="3" Grid.ColumnSpan="4" Margin="-25,8,0,0" Grid.RowSpan="2" Maximum="40" Minimum="5" TickFrequency="2" TickPlacement="BottomRight" IsSnapToTickEnabled="True"/>
+        <TextBox Text="{Binding ElementName=RadiusSlider, Path=Value}" Grid.Row="3" Grid.Column="6" Panel.ZIndex="3" Width="40" Height="25" Margin="-20,-15,0,0"/>
         <Slider Style="{DynamicResource SliderStyle}" Name="MassSlider" Width="130"  Grid.Column="3" Grid.Row="4" Panel.ZIndex="3" Grid.ColumnSpan="4" Margin="-25,8,0,0" Grid.RowSpan="2" Maximum="20" Minimum="1" TickFrequency="01" TickPlacement="BottomRight" IsSnapToTickEnabled="True"/>
         <TextBox Text="{Binding ElementName=MassSlider, Path=Value}" Grid.Row="4" Grid.Column="6" Panel.ZIndex="3" Width="40" Height="25" Margin="-20,-15,0,0"/>
-        <Label Content="Diameter" Grid.Row="3" Panel.ZIndex="3" Grid.Column="0" FontSize="14" FontWeight="Bold" Grid.ColumnSpan="2" Margin="30,-2,0,0"/>
+        <Label Content="Radius" Grid.Row="3" Panel.ZIndex="3" Grid.Column="0" FontSize="14" FontWeight="Bold" Grid.ColumnSpan="2" Margin="30,-2,0,0"/>
         <Label Content="Mass" Grid.Row="4" Panel.ZIndex="3" Grid.Column="0" FontSize="14" FontWeight="Bold" Grid.ColumnSpan="2" Margin="30,-2,0,0"/>
         <Label Content="Colour" Grid.Row="5" Panel.ZIndex="3" Grid.Column="0" FontSize="14" FontWeight="Bold" Grid.ColumnSpan="2" Margin="30,-2,0,0"/>
         <ComboBox Name ="ColourSelector" Grid.Row="5" Grid.Column="4" Grid.ColumnSpan="3" Height="25" Width="150" Panel.ZIndex="3" Margin="-30,-20,0,0" SelectionChanged="UpdateColour">
@@ -314,7 +316,7 @@
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
                         <Rectangle Width="40" Height="30" Fill="{Binding Name}"/>
-                        <TextBlock Text="{Binding Name}"/>
+                        <TextBlock Text="{Binding Name, Converter={StaticResource textConv}}"/>
                     </StackPanel>
                 </DataTemplate>
             </ComboBox.ItemTemplate>

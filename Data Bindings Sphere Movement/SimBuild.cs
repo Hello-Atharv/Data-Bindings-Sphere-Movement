@@ -7,7 +7,7 @@ namespace DataBindingsSphereMovement
     public delegate void NotifyClosing();
     public class SimBuild
     {
-        int ticks;
+        private int ticks;
         private DispatcherTimer timer;
 
         private const double deltaT = 0.02;

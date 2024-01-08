@@ -4,9 +4,9 @@ using System.Text;
 using System.Windows.Data;
 using System.Globalization;
 
-namespace DataBindingsSphereMovement 
+namespace DataBindingsSphereMovement
 {
-    class CoeffRestitutionConverter: IValueConverter
+    class ColourTextConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -14,15 +14,7 @@ namespace DataBindingsSphereMovement
             {
                 string pos = value.ToString();
 
-                if(pos.Length == 1) //A single digit
-                {
-                    pos = pos + ".0";
-                }
-                else
-                {
-                    pos = pos.Substring(0, 3);
-                }
-
+                pos = "    " + pos;
                 return pos;
             }
             catch (Exception ex)
@@ -30,7 +22,7 @@ namespace DataBindingsSphereMovement
                 return null;
             }
         }
-        
+
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();

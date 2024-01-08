@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DataBindingsSphereMovement
 {
-    class LinkedListNode<T>
+    public class LinkedListNode<T>
     {
         private LinkedListNode<T> next = null;
         private LinkedListNode<T> prev = null;

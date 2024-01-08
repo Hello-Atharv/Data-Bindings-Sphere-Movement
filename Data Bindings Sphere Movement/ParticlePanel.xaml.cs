@@ -19,16 +19,16 @@ namespace DataBindingsSphereMovement
     /// 
     public class ParticleGroupProperties : INotifyPropertyChanged
     {
-        private Binding diameter;
+        private Binding radius;
         private Binding mass;
         private string colour;
         private Binding groupCount;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public ParticleGroupProperties(Binding diameter, Binding mass, Binding groupCount, string colour)
+        public ParticleGroupProperties(Binding radius, Binding mass, Binding groupCount, string colour)
         {
-            this.diameter = diameter;
+            this.radius = radius;
             this.mass = mass;
             this.colour = colour;
             this.groupCount = groupCount;
@@ -40,10 +40,10 @@ namespace DataBindingsSphereMovement
             set { colour = value; OnPropertyChanged("Colour"); }
         }
 
-        public Binding Diameter
+        public Binding Radius
         {
-            get { return diameter; }
-            set { diameter = value; }
+            get { return radius; }
+            set {Radius = value; }
         }
         public Binding Mass
         {
@@ -71,9 +71,9 @@ namespace DataBindingsSphereMovement
     public partial class ParticlePanel : Window, INotifyPropertyChanged
     {
         private SimBuild builder;
-        private int groupDisplayed = 1;
+        private int groupDisplayed = 0;
         private int noGroups = 0;
-        private Dictionary<int, ParticleGroupProperties> particleGroups;
+        private LinkedList<ParticleGroupProperties> particleGroups;
 
         private const int red = 113; //113 is index for colour red (default starting colour for particles)
 
@@ -87,7 +87,7 @@ namespace DataBindingsSphereMovement
         public ParticlePanel(SimBuild simBuild) 
         {
             InitializeComponent();
-            particleGroups = new Dictionary<int, ParticleGroupProperties>();
+            particleGroups = new LinkedList<ParticleGroupProperties>();
             valueConv = new IntStringConverter();
 
             builder = simBuild;
@@ -97,7 +97,6 @@ namespace DataBindingsSphereMovement
 
             ColourSelector.ItemsSource = typeof(Colors).GetProperties();
             ColourSelector.SelectedIndex = red;
-
             
             SetBindings();
             /*
@@ -119,45 +118,45 @@ namespace DataBindingsSphereMovement
             noGroups++;
 
 
-            Binding diameter = new Binding("Diameter");
-            diameter.Source = builder.SimWorld.AttributesDictionary[noGroups];
+            Binding radius = new Binding("Radius");
+            radius.Source = builder.SimWorld.AttributesList.FindDataAtIndex(noGroups-1);
 
             Binding mass = new Binding("Mass");
-            mass.Source = builder.SimWorld.AttributesDictionary[noGroups];
+            mass.Source = builder.SimWorld.AttributesList.FindDataAtIndex(noGroups-1);
 
             Binding groupCount = new Binding("GroupCount");
-            groupCount.Source = builder.SimWorld.AttributesDictionary[noGroups];
+            groupCount.Source = builder.SimWorld.AttributesList.FindDataAtIndex(noGroups-1);
             groupCount.Converter = valueConv;
             
-            ParticleGroupProperties newGroup = new ParticleGroupProperties(diameter, mass, groupCount, "Red");
-            particleGroups.Add(noGroups, newGroup);
-            
+            ParticleGroupProperties newGroup = new ParticleGroupProperties(radius, mass, groupCount, "Red");
+            particleGroups.Add(newGroup);
+
+            this.GroupDisplayed = noGroups;
+
             CheckBoundaryValues();
         }
 
         private void ClickNextGroup(object sender, RoutedEventArgs e)
         {
-            groupDisplayed++;
-            GroupDisplayedChanged();
+            this.GroupDisplayed++;
         }
 
         private void ClickPreviousGroup(object sender, RoutedEventArgs e)
         {
             
-            groupDisplayed--;
-            GroupDisplayedChanged();
+            this.GroupDisplayed--;
         }
 
         private void SetBindings()
         {
-            DiameterSlider.SetBinding(Slider.ValueProperty, particleGroups[groupDisplayed].Diameter);
-            MassSlider.SetBinding(Slider.ValueProperty, particleGroups[groupDisplayed].Mass);
-            GroupCountLabel.SetBinding(Label.ContentProperty, particleGroups[groupDisplayed].GroupCount);
+            RadiusSlider.SetBinding(Slider.ValueProperty, particleGroups.FindDataAtIndex(groupDisplayed-1).Radius);
+            MassSlider.SetBinding(Slider.ValueProperty, particleGroups.FindDataAtIndex(groupDisplayed-1).Mass);
+            GroupCountLabel.SetBinding(Label.ContentProperty, particleGroups.FindDataAtIndex(groupDisplayed-1).GroupCount);
         }
 
         private void UpdateColour(object sender, SelectionChangedEventArgs e){
             string colour = GetColourStringFromSelector(ColourSelector.SelectedItem);
-            particleGroups[groupDisplayed].Colour = colour;
+            particleGroups.FindDataAtIndex(groupDisplayed-1).Colour = colour;
         }
 
         private void CheckBoundaryValues()
@@ -182,7 +181,6 @@ namespace DataBindingsSphereMovement
 
         private void GroupDisplayedChanged()
         {
-            OnPropertyChanged("GroupDisplayed");
             CheckBoundaryValues();
             SetBindings();
             GroupChangedColourChange();
@@ -191,7 +189,7 @@ namespace DataBindingsSphereMovement
 
         private void GroupChangedColourChange()
         {
-            string colour = particleGroups[groupDisplayed].Colour;
+            string colour = particleGroups.FindDataAtIndex(groupDisplayed-1).Colour;
 
             bool found = false;
             int i = 0;
@@ -230,13 +228,14 @@ namespace DataBindingsSphereMovement
                 SpawnButton.Content = "Spawn";
             }
         }
-
+        
         public int GroupDisplayed
         {
             get { return groupDisplayed;}
+            set { groupDisplayed = value; OnPropertyChanged("GroupDisplayed"); GroupDisplayedChanged(); }
         }
 
-        public Dictionary<int, ParticleGroupProperties> ParticleGroups
+        public LinkedList<ParticleGroupProperties> ParticleGroups
         {
             get { return particleGroups; }
             set { particleGroups = value; }

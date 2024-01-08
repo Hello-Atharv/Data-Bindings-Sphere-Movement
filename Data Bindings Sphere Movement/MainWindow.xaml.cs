@@ -22,9 +22,6 @@ namespace DataBindingsSphereMovement
         private bool mouseDown = false;
         private bool showQuadtree = false;
 
-        private const double sphereSize = 30;
-
-        private const double mouseSafetyMargin = sphereSize/2;
         private const double sphereSpawnDelay = 3;
         private const double sphereSpawnMultiplier = 0.02;
 
@@ -55,9 +52,11 @@ namespace DataBindingsSphereMovement
 
         private void UpdateGameTime()
         {
+            
             double currentGameTime = Convert.ToDouble(gameTimeDisplay.Text);
             currentGameTime = currentGameTime + builder.DeltaT;
             gameTimeDisplay.Text = Convert.ToString(Math.Round(currentGameTime, 2));
+            
 
         }
 
@@ -127,7 +126,7 @@ namespace DataBindingsSphereMovement
         */
         private void SphereCreation()
         {
-            double mouseOffset = builder.SimWorld.AttributesDictionary[builder.SimWorld.GroupSelected].Diameter / 2; //problem of collisions is due to offsets - fix sphereSize, mouseOffset and PosConv converter
+            double mouseOffset = builder.SimWorld.AttributesList.FindDataAtIndex(builder.SimWorld.GroupSelected-1).Radius ; //problem of collisions is due to offsets - fix sphereSize, mouseOffset and PosConv converter
             double xPos;
             double yPos;
             if (mouseDown)
@@ -136,7 +135,7 @@ namespace DataBindingsSphereMovement
                 xPos = Mouse.GetPosition(canvas).X- mouseOffset;
                 yPos = Mouse.GetPosition(canvas).Y-mouseOffset;
 
-                if (CheckWithinBorder(xPos, yPos) && Panel.GetZIndex((UIElement)Mouse.DirectlyOver)<1 && Panel.GetZIndex((UIElement)Mouse.DirectlyOver)<50)
+                if (CheckWithinBorder(xPos, yPos, mouseOffset) && Panel.GetZIndex((UIElement)Mouse.DirectlyOver)<1 && Panel.GetZIndex((UIElement)Mouse.DirectlyOver)<50)
                 {
                     AddSphere(xPos, yPos);
                 }
@@ -147,22 +146,24 @@ namespace DataBindingsSphereMovement
         private void AddSphere(double mouseXPos, double mouseYPos)
         {
 
-            Attributes diameterGroupPath = builder.SimWorld.AttributesDictionary[builder.SimWorld.GroupSelected];
-            double diameterPath = diameterGroupPath.Diameter;
+            Attributes radiusGroupPath = builder.SimWorld.AttributesList.FindDataAtIndex(builder.SimWorld.GroupSelected-1);
+            double diameterPath = radiusGroupPath.Radius * 2;
 
             PosConv posConv = new PosConv(diameterPath);
 
             Binding xPos = new Binding("XValue");
             Binding yPos = new Binding("YValue");
 
-            Binding diameter = new Binding("Diameter");
+            Binding diameter = new Binding("Radius");
 
             Binding colour = new Binding("Colour");
 
             //xPos.Converter = posConv;
             //yPos.Converter = posConv;
 
-            //diameter.Converter = radiusConv;
+            RadiusConv radiusConv = new RadiusConv();
+
+            diameter.Converter = radiusConv;
 
             colour.Converter = colourConv;
 
@@ -186,8 +187,8 @@ namespace DataBindingsSphereMovement
             xPos.Source = builder.SimWorld.AllParticles[builder.SimWorld.ParticleCount - 1].Position;
             yPos.Source = builder.SimWorld.AllParticles[builder.SimWorld.ParticleCount - 1].Position;
 
-            diameter.Source = diameterGroupPath;
-            colour.Source = partPanel.ParticleGroups[builder.SimWorld.GroupSelected];
+            diameter.Source = radiusGroupPath;
+            colour.Source = partPanel.ParticleGroups.FindDataAtIndex(builder.SimWorld.GroupSelected-1);
             
             ellipse.SetBinding(Canvas.HeightProperty, diameter);
             ellipse.SetBinding(Canvas.WidthProperty, diameter);
@@ -214,11 +215,11 @@ namespace DataBindingsSphereMovement
             mouseDown = false;
         }
 
-        private bool CheckWithinBorder(double xPos, double yPos)
+        private bool CheckWithinBorder(double xPos, double yPos, double mouseOffset)
         {
             bool withinBorder = false;
 
-            if ((xPos > Canvas.GetLeft(BoxBorder) + mouseSafetyMargin + sphereSize / 2) && (xPos < Canvas.GetLeft(BoxBorder) - sphereSize / 2 + BoxBorder.Width - mouseSafetyMargin) && (yPos > Canvas.GetTop(BoxBorder) + sphereSize / 2 + mouseSafetyMargin) && (yPos < Canvas.GetTop(BoxBorder) - sphereSize / 2 + BoxBorder.Height - mouseSafetyMargin))
+            if ((xPos > Canvas.GetLeft(BoxBorder) + mouseOffset) && (xPos < Canvas.GetLeft(BoxBorder) - (3*mouseOffset) + BoxBorder.Width) && (yPos > Canvas.GetTop(BoxBorder) + mouseOffset) && (yPos < Canvas.GetTop(BoxBorder) - (3*mouseOffset) + BoxBorder.Height))
             {
                 withinBorder = true;
             }
@@ -230,8 +231,8 @@ namespace DataBindingsSphereMovement
         {
             BoxBorder.Width = builder.SimWorld.PerimeterWidth;
             BoxBorder.Height = builder.SimWorld.PerimeterHeight;
-            Canvas.SetLeft(BoxBorder, (Window.Width - BoxBorder.Width) / 2);
-            Canvas.SetTop(BoxBorder, (Window.Height - BoxBorder.Height) / 2);
+            Canvas.SetLeft(BoxBorder, builder.SimWorld.OffsetX);
+            Canvas.SetTop(BoxBorder, builder.SimWorld.OffsetY);
         }
 
         private void DisplayQuadtree()
@@ -240,7 +241,8 @@ namespace DataBindingsSphereMovement
 
             DeleteQuadtree();
 
-            foreach(Node node in quadtree.Nodes)
+            Node[] quadtreeNodes = quadtree.Nodes.AllData();
+            foreach(Node node in quadtreeNodes)
             {
                 
                 CreateRectangle(node.BottomRight.XValue-node.TopLeft.XValue,node.BottomRight.YValue-node.TopLeft.YValue,node.TopLeft.XValue, node.TopLeft.YValue);

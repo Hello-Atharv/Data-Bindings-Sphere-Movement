@@ -18,22 +18,22 @@ namespace DataBindingsSphereMovement
 
         private const int maxParticles = 2;
 
-        private const double splittingConst = 0;
+        private const double splittingConstGrav = 1;
 
-        private List<Node> nodes;
+        private LinkedList<Node> nodes;
 
-        private List<Node> adjNodes;
-        private List<Node> gravNodes;
+        private LinkedList<Node> adjNodes;
+        private LinkedList<Node> gravNodes;
 
         public Quadtree(Vector rootTopLeft, Vector rootBottomRight)
         {
             root = new Node(rootTopLeft, rootBottomRight);
-            adjNodes = new List<Node>();
-            gravNodes = new List<Node>();
+            adjNodes = new LinkedList<Node>();
+            gravNodes = new LinkedList<Node>();
         }
 
         public void BuildQuadtree(List<Particle> particles){
-            nodes = new List<Node>();
+            nodes = new LinkedList<Node>();
             nodes.Add(root);
             BuildingProcess(root, particles);
             AddGravityInfo();
@@ -42,7 +42,7 @@ namespace DataBindingsSphereMovement
         private void BuildingProcess(Node parentNode, List<Particle> particles)
         {
             Node[] nodesplit = SplitQuadrant(parentNode);
-            Tuple<List<Particle>, bool> particleCheck;
+            Tuple<LinkedList<Particle>, bool> particleCheck;
 
             for(int i = 0; i < nodesplit.Length; i++)
             {
@@ -58,10 +58,11 @@ namespace DataBindingsSphereMovement
                 }
                 else
                 {
-                    if (particleCheck.Item1.Count != 0)
+                    if (particleCheck.Item1.Length != 0)
                     {
                         nodesplit[i].ContainedParticles = particleCheck.Item1;
-                        foreach(Particle p in nodesplit[i].ContainedParticles)
+                        Particle[] partsInNode = nodesplit[i].ContainedParticles.AllData();
+                        foreach(Particle p in partsInNode)
                         {
                             p.QuadtreeNode = nodesplit[i];
                         }
@@ -73,14 +74,14 @@ namespace DataBindingsSphereMovement
             }
         }
 
-        private Tuple<List<Particle>,bool> CheckParticlesInRectangle(Node node, List<Particle> particles)
+        private Tuple<LinkedList<Particle>,bool> CheckParticlesInRectangle(Node node, List<Particle> particles)
         {
             int index = 0;
             bool splitQuadrant = false;
 
-            List<Particle> partInNode = new List<Particle>();
+            LinkedList<Particle> partInNode = new LinkedList<Particle>();
 
-            while(index < particles.Count &&  partInNode.Count < maxParticles+1) { 
+            while(index < particles.Count &&  partInNode.Length < maxParticles+1) { 
                 if (particles[index].Position.XValue > node.TopLeft.XValue && particles[index].Position.XValue < node.BottomRight.XValue && particles[index].Position.YValue > node.TopLeft.YValue && particles[index].Position.YValue < node.BottomRight.YValue)
                 {
                     partInNode.Add(particles[index]);
@@ -88,12 +89,12 @@ namespace DataBindingsSphereMovement
                 index++;
             }
 
-            if(partInNode.Count > maxParticles)
+            if(partInNode.Length > maxParticles)
             {
                 splitQuadrant = true;
             }
                      
-            return new Tuple<List<Particle>, bool>(partInNode,splitQuadrant);
+            return new Tuple<LinkedList<Particle>, bool>(partInNode,splitQuadrant);
             
         }
 
@@ -116,13 +117,27 @@ namespace DataBindingsSphereMovement
 
 
 
-        public List<Node> FindAdjacentNodes(Node node)
+        public LinkedList<Particle> FindAdjacentParticles(Node node)
         {
 
-            adjNodes = new List<Node>();
+            adjNodes = new LinkedList<Node>();
             CollisionTraverse(root, node);
 
-            return adjNodes;
+            LinkedList<Particle> adjParticles = new LinkedList<Particle>();
+            for(int i = 0; i < adjNodes.Length; i++)
+            {
+                if (adjNodes.FindDataAtIndex(i) != null)
+                {
+                    Particle[] partsInNode = adjNodes.FindDataAtIndex(i).ContainedParticles.AllData();
+                    foreach (Particle p in adjNodes.FindDataAtIndex(i).ContainedParticles.AllData())
+                    {
+                        adjParticles.Add(p);
+                    }
+                }
+            }
+
+
+            return adjParticles;
         }
 
         private void CollisionTraverse(Node node, Node toCompare)
@@ -172,8 +187,8 @@ namespace DataBindingsSphereMovement
         public double FindNodeMass(Node node)
         {
             double totalMass = 0;
-
-            foreach(Particle p in node.ContainedParticles)
+            Particle[] partsInNode = node.ContainedParticles.AllData();
+            foreach(Particle p in partsInNode)
             {
                 totalMass = totalMass + p.Properties.Mass;
             }
@@ -184,8 +199,8 @@ namespace DataBindingsSphereMovement
         public Vector FindNodeWeightedSum(Node node)
         {
             Vector weightedSum = new Vector(0, 0);
-
-            foreach (Particle p in node.ContainedParticles)
+            Particle[] partsInNode = node.ContainedParticles.AllData();
+            foreach (Particle p in partsInNode)
             {
                 weightedSum.AddVectors(true, p.Position.ScalarMultiply(false, p.Properties.Mass));
             }
@@ -224,9 +239,9 @@ namespace DataBindingsSphereMovement
             node.NodeCOM = weightedSum.ScalarMultiply(false, 1/node.NodeMass);
         }
 
-        public List<Node> GlobalGravField(Particle particle)
+        public LinkedList<Node> GlobalGravField(Particle particle)
         {
-            gravNodes = new List<Node>();
+            gravNodes = new LinkedList<Node>();
             GravTraverse(root, particle);
 
             return gravNodes;
@@ -261,7 +276,7 @@ namespace DataBindingsSphereMovement
             bool traverseNode = false;
             double sepDistance = particle.Position.SepDistance(node.NodeCOM);
 
-            if(FindIntermediarySize(node)/sepDistance > splittingConst)
+            if(FindIntermediarySize(node)/sepDistance > splittingConstGrav)
             {
                 traverseNode = true;
             }
@@ -297,7 +312,7 @@ namespace DataBindingsSphereMovement
             return isLeafNode;
         }
 
-        public List<Node> Nodes
+        public LinkedList<Node> Nodes
         {
             get { return nodes; }
         }

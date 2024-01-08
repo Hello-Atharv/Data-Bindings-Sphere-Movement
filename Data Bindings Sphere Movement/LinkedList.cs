@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DataBindingsSphereMovement
 {
-    class LinkedList<T>
+    public class LinkedList<T>
     {
         private int length = 0;
 

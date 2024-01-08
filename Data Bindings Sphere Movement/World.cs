@@ -12,14 +12,17 @@ namespace DataBindingsSphereMovement
     {
         private Random rand = new Random();
 
-        Vector iHat = new Vector(1, 0);
+        Vector iHat = new Vector(1, 0); 
         Vector jHat = new Vector(0, 1);
 
         private const double perimeterWidth = 1475.2;
-        private const double perimeterHeight = 803.2;
-        private const double offset = 30;
+        private const double perimeterHeight = 783.2;
+        private const double offsetX = 30;
+        private const double offsetY = 50;
+        private const double defaultRadius = 15;
+        private const double defaultMass = 1;
 
-        Quadtree quadtree = new Quadtree(new Vector(offset, offset), new Vector(offset + perimeterWidth, offset + perimeterHeight));
+        Quadtree quadtree;
 
         private double uniformGravStrength = 2;
         private bool uniformGravEnabled = false;
@@ -27,7 +30,7 @@ namespace DataBindingsSphereMovement
         public event PropertyChangedEventHandler PropertyChanged;
 
         private ObservableCollection<Particle> particles;
-        private Dictionary<int, Attributes> attributesDictionary;
+        private LinkedList<Attributes> attributesList;
         private int particleGroupCount = 0;
 
         private int groupSelected;
@@ -37,17 +40,21 @@ namespace DataBindingsSphereMovement
 
         private double coeffRestitution = 1;
 
-        private const double gravConstant = 10;
+        private const double gravConstant = 1;
 
         public World()
         {
             particles = new ObservableCollection<Particle>();
-            attributesDictionary = new Dictionary<int, Attributes>();
+            attributesList = new LinkedList<Attributes>();
 
-            Vector topLeft = new Vector(offset, offset);
-            Vector bottomRight = new Vector(offset + perimeterWidth, offset + perimeterHeight);
+            Vector topLeft = new Vector(offsetX, offsetY);
+            Vector bottomRight = new Vector(offsetX + perimeterWidth, offsetY + perimeterHeight);
+            
+            quadtree = new Quadtree(topLeft, bottomRight);
 
             groupSelected = 1;
+
+            List<string> stuff = new List<string>();
         }
 
         public ObservableCollection<Particle> AllParticles
@@ -85,9 +92,9 @@ namespace DataBindingsSphereMovement
                 yVel = -1 * yVel;
             }
 
-            Particle newParticle = new Particle(xPos, yPos, xVel, yVel, attributesDictionary[groupSelected]);
+            Particle newParticle = new Particle(xPos, yPos, xVel, yVel, attributesList.FindDataAtIndex(groupSelected-1));
             particles.Add(newParticle);
-            attributesDictionary[groupSelected].ParticleAdded();
+            attributesList.FindDataAtIndex(groupSelected-1).ParticleAdded();
             OnPropertyChanged("ParticleCount");
         }
 
@@ -123,11 +130,11 @@ namespace DataBindingsSphereMovement
                 GlobalGravField(p);
 
                 /*
-                List<Node> gravContenders = quadtree.GlobalGravField(p);
+                LinkedList<Node> gravContenders = quadtree.GlobalGravField(p);
 
 
                 
-                    foreach (Node grav in gravContenders)
+                    foreach (Node grav in gravContender.AllData())
                     {
                         if (quadtree.CheckLeafNode(grav) && grav.ContainedParticles!=null)
                         {
@@ -185,19 +192,19 @@ namespace DataBindingsSphereMovement
         {
             foreach (Particle p in particles)
             {
-                if(p.Position.XValue < offset)
+                if(p.Position.XValue < offsetX)
                 {
                     p.Velocity.XValue = Math.Abs(p.Velocity.XValue);
                 }
-                if(p.Position.XValue > offset + perimeterWidth - p.Properties.Diameter)
+                if(p.Position.XValue > offsetX + perimeterWidth - p.Properties.Radius*2)
                 {
                     p.Velocity.XValue = -1*Math.Abs(p.Velocity.XValue);
                 }
-                if (p.Position.YValue < offset)
+                if (p.Position.YValue < offsetY)
                 {
                     p.Velocity.YValue = Math.Abs(p.Velocity.YValue);
                 }
-                if(p.Position.YValue > offset + perimeterHeight - p.Properties.Diameter)
+                if(p.Position.YValue > offsetY + perimeterHeight - p.Properties.Radius*2)
                 {
                     p.Velocity.YValue = -1 * Math.Abs(p.Velocity.YValue);
                 }
@@ -206,26 +213,26 @@ namespace DataBindingsSphereMovement
 
         public void CollisionsBetweenParticles()
         {
-            Node[] collisionContenders;
+            Particle[] collisionContenders;
 
             for(int i = 0; i < particles.Count; i++)
             {
                 
-                collisionContenders = quadtree.FindAdjacentNodes(particles[i].QuadtreeNode).ToArray<Node>();
-                foreach (Node n in collisionContenders)
-                {
-                    if (n != null)
-                    {
-                        foreach (Particle p in n.ContainedParticles)
-                        {
-                            if (particles[i].Position.SepDistance(p.Position) <= particles[i].Properties.Diameter/2 + p.Properties.Diameter/2 && particles.IndexOf(p)>i)
-                            {
-                                SimulateParticleCollision45(particles[i], p);
-                            }
-                        }
-                    }
+                collisionContenders = quadtree.FindAdjacentParticles(particles[i].QuadtreeNode).AllData();
 
+
+
+                foreach (Particle p in collisionContenders)
+                {
+                    if (particles[i].Position.SepDistance(p.Position) <= particles[i].Properties.Radius + p.Properties.Radius && particles.IndexOf(p) > i)
+                    {
+                         SimulateParticleCollision45(particles[i], p);
+                    }
                 }
+                        
+
+            }
+                
                 
                 /*
                 for(int j = i+1; j<particles.Count; j++)
@@ -244,11 +251,11 @@ namespace DataBindingsSphereMovement
                 }
                 */
                 
-            }
+            
 
         }
 
-        public void SimulateParticleCollision(int particle1, int particle2)
+        private void SimulateParticleCollision(int particle1, int particle2)
         {
             Particle par1 = particles[particle1];
             Particle par2 = particles[particle2];
@@ -345,9 +352,9 @@ namespace DataBindingsSphereMovement
 
         public void MakeNewParticleGroup()
         {
-            Attributes group = new Attributes(30, 1);
+            Attributes group = new Attributes(defaultRadius, defaultMass);
             particleGroupCount++;
-            attributesDictionary.Add(particleGroupCount, group);
+            attributesList.Add(group);
         }
 
 
@@ -361,15 +368,25 @@ namespace DataBindingsSphereMovement
             get { return perimeterHeight; }
         }
 
+        public double OffsetX
+        {
+            get { return offsetX; }
+        }
+
+        public double OffsetY
+        {
+            get { return offsetY; }
+        }
+
         public double TempCoeff
         {
             get { return tempCoeff; }
             set { tempCoeff = value; OnPropertyChanged("TempCoeff"); }
         }
 
-        public Dictionary<int, Attributes> AttributesDictionary
+        public LinkedList<Attributes> AttributesList
         {
-            get { return attributesDictionary; }
+            get { return attributesList; }
         }
 
         public Quadtree GetQuadtree
@@ -389,7 +406,7 @@ namespace DataBindingsSphereMovement
             set { coeffRestitution = value; OnPropertyChanged("CoeffRestitution"); }
         }
 
-        public void UniformGravField(Particle p)
+        private void UniformGravField(Particle p)
         {
            
                 p.Velocity.AddVectors(true, new Vector(0, uniformGravStrength));

@@ -13,7 +13,7 @@ namespace DataBindingsSphereMovement
         private Node parent;
         private Node[] children = new Node[4];
 
-        private List<Particle> containedParticle;
+        private LinkedList<Particle> containedParticle;
 
         private double nodeMass;
         private Vector nodeCOM;
@@ -47,7 +47,7 @@ namespace DataBindingsSphereMovement
             set { children = value; }
         }
 
-        public List<Particle> ContainedParticles
+        public LinkedList<Particle> ContainedParticles
         {
             get { return containedParticle; }
             set { containedParticle = value; }

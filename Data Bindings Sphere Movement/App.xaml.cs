@@ -13,5 +13,7 @@ namespace DataBindingsSphereMovement
     /// </summary>
     public partial class App : Application
     {
+
     }
+
 }

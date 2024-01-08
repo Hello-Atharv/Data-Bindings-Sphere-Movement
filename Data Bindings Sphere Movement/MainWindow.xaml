@@ -7,13 +7,13 @@
         mc:Ignorable="d"
         Title="MainWindow" Name ="Window" Height="863.2" WindowState= "Maximized"  WindowStyle="None" Width="1535.2">
 
-    
+
 
     <Canvas Name ="canvas" Background="#343436" Focusable ="True" Width="Auto" MouseDown="MouseHeld" MouseUp="MouseRelease">
-        <TextBox Name="particleCountDisplay" TextWrapping="Wrap" Text="{Binding ParticleCount, Mode=OneWay}" Canvas.Top="11" Width="120" Canvas.Left="1130" Panel.ZIndex="1" IsReadOnly="True" Visibility="Visible"/>
-        <Label Name ="particleCountLabel" Content="Particle Count:" Canvas.Top="7" Canvas.Left="1040" Foreground="White" Visibility="Visible"/>
+        <TextBox Name="particleCountDisplay" TextWrapping="Wrap" Text="{Binding ParticleCount, Mode=OneWay}" Canvas.Top="15" Width="120" Canvas.Left="1130" Panel.ZIndex="1" IsReadOnly="True" Visibility="Visible"/>
+        <Label Name ="particleCountLabel" Content="Particle Count:" Canvas.Top="11" Canvas.Left="1040" Foreground="White" Visibility="Visible"/>
 
-        <Border x:Name="BoxBorder" BorderBrush="Black" BorderThickness="3" Height="803.2" Canvas.Left="30" Canvas.Top="30" Width="1475.2" OpacityMask="Black" Background="#E0E8E9" Panel.ZIndex="0"/>
+        <Border x:Name="BoxBorder" BorderBrush="Black" BorderThickness="3" Height="773.2" Canvas.Left="30" Canvas.Top="50" Width="1475.2" OpacityMask="Black" Background="#E0E8E9" Panel.ZIndex="0"/>
 
 
         <Grid Name="ParticlePanel" Canvas.Left="1180" Canvas.Top="60" Panel.ZIndex="2" Visibility="Collapsed">
@@ -38,30 +38,30 @@
             </Grid>
         </Grid>
 
-        <Slider Name ="radiusSlider" Panel.ZIndex="2" Canvas.Left="64" Canvas.Top="140" Width="150" Value="2" Minimum="0" Maximum="1"/>
-        <TextBox Name="mouseCoords" Canvas.Left="61" TextWrapping="Wrap" Text="0,0" Canvas.Top="423" Width="120"/>
-        <TextBox Name ="gameTimeDisplay" Canvas.Left="1383" TextWrapping="Wrap" Text="0" Canvas.Top="11" Width="120" IsReadOnly="True" Visibility="Visible"/>
-        <Label Name="gameTimeLabel" Content="Simulation Time:" Canvas.Top="7" Canvas.Left="1279" Foreground="White" Visibility="Visible"/>
-        <TextBox Name ="itemDirectlyOver" Canvas.Left="61" Canvas.Top="500" Width="250" Height="30" Text="{Binding AllParticles[0].Position.XValue}"/>
+        <Slider Name ="radiusSlider" Panel.ZIndex="2" Canvas.Left="64" Canvas.Top="140" Width="150" Value="2" Minimum="0" Maximum="1" Visibility="Hidden"/>
+        <TextBox Name="mouseCoords" Canvas.Left="61" TextWrapping="Wrap" Text="0,0" Canvas.Top="423" Width="120" Visibility="Hidden"/>
+        <TextBox Name ="gameTimeDisplay" Canvas.Left="1383" TextWrapping="Wrap" Text="0" Canvas.Top="15" Width="120" IsReadOnly="True" Visibility="Visible"/>
+        <Label Name="gameTimeLabel" Content="Simulation Time:" Canvas.Top="11" Canvas.Left="1279" Foreground="White" Visibility="Visible"/>
+        <TextBox Name ="itemDirectlyOver" Canvas.Left="61" Canvas.Top="500" Width="250" Height="30" Text="{Binding AllParticles[0].Position.XValue}" Visibility="Hidden"/>
 
-        <Menu Name ="toolbar" Height="20" Width="200" Canvas.Left="30" Canvas.Top="5">
-            <MenuItem Header="File">
+        <Menu Name ="toolbar" Height="24" Width="300" Canvas.Left="34" Canvas.Top="11" FontSize="16">
+            <MenuItem Header="    File" Width="75" HorizontalAlignment="Center">
                 <MenuItem Header="Save" IsCheckable="False"/>
                 <MenuItem Header="Load" IsCheckable="False"/>
                 <MenuItem Header="Close" IsCheckable="False" Click="Close"/>
             </MenuItem>
-            <MenuItem Header="Options">
+            <MenuItem Header="Options" Width="75">
                 <MenuItem Header="Show Quadtree" IsCheckable="True" Click="ToggleQuadtree"/>
                 <MenuItem Header="Show Simulation Time" IsCheckable="True" Click="ToggleSimulationTime" IsChecked="True"/>
                 <MenuItem Header="Show Particle Count" IsCheckable="True" Click="ToggleParticleCount" IsChecked="True"/>
             </MenuItem>
-            <MenuItem Header="_Panels">
+            <MenuItem Header="  Panels" Width="75">
                 <MenuItem Name="ParticlePanelTrigger" Header="Particles" IsCheckable="True" Click="OpenParticlePanel"/>
                 <MenuItem Name="TemperaturePanelTrigger" Header="Temperature" IsCheckable="True"  Click="OpenTempPanel"/>
                 <MenuItem Name ="CollisionPanelTrigger" Header="Collisions" IsCheckable="True" Click="OpenCollisionPanel"/>
                 <MenuItem Name="GravityPanelTrigger" Header="Gravity" IsCheckable="True" Click="OpenGravityPanel"/>
             </MenuItem>
-            <MenuItem Header="Help" Click="OpenHelp"/>
+            <MenuItem Header="   Help" Click="OpenHelp" Width="75"/>
         </Menu>
 
 
